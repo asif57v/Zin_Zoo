@@ -17,8 +17,6 @@ const AdminLogin = lazy(() => import("@food/pages/admin/auth/AdminLogin"))
 const AdminSignup = lazy(() => import("@food/pages/admin/auth/AdminSignup"))
 const AdminForgotPassword = lazy(() => import("@food/pages/admin/auth/AdminForgotPassword"))
 
-// Delivery Module
-const DeliveryRouter = lazy(() => import("../DeliveryV2"))
 
 function UserPathRedirect() {
   const location = useLocation()
@@ -46,7 +44,6 @@ export default function App() {
 
   useEffect(() => {
     const resolveModule = () => {
-      if (location.pathname.startsWith("/food/delivery")) return "delivery"
       return "user"
     }
 
@@ -83,11 +80,6 @@ export default function App() {
             element={<UserRouter />}
           />
 
-          {/* Delivery Module - Already mapped to /delivery */}
-          <Route
-            path="delivery/*"
-            element={<DeliveryRouter />}
-          />
 
           {/* Legacy Redirects & Fallbacks - use absolute path to avoid /user appended in a loop */}
           <Route path="/" element={<Navigate to="/food/user" replace />} />
