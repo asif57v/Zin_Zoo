@@ -4,10 +4,6 @@ import {
     verifyUserOtpController,
     adminLoginController,
     refreshTokenController,
-    requestRestaurantOtpController,
-    verifyRestaurantOtpController,
-    requestDeliveryOtpController,
-    verifyDeliveryOtpController,
     logoutController,
     getMeController,
     updateAdminProfileController,
@@ -25,14 +21,6 @@ const router = express.Router();
 // User OTP login
 router.post('/user/request-otp', authRateLimiter, requestUserOtpController);
 router.post('/user/verify-otp', authRateLimiter, verifyUserOtpController);
-
-// Restaurant OTP login
-router.post('/restaurant/request-otp', authRateLimiter, requestRestaurantOtpController);
-router.post('/restaurant/verify-otp', authRateLimiter, verifyRestaurantOtpController);
-
-// Delivery partner OTP login
-router.post('/delivery/request-otp', authRateLimiter, requestDeliveryOtpController);
-router.post('/delivery/verify-otp', authRateLimiter, verifyDeliveryOtpController);
 
 // Admin login
 router.post('/admin/login', authRateLimiter, adminLoginController);
