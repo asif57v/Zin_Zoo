@@ -13,30 +13,30 @@ const PointOfSale = lazy(() => import("@food/pages/admin/PointOfSale"));
 const AdminProfile = lazy(() => import("@food/pages/admin/AdminProfile"));
 const AdminSettings = lazy(() => import("@food/pages/admin/AdminSettings"));
 const NewRefundRequests = lazy(() => import("@food/pages/admin/refunds/NewRefundRequests"));
-const FoodApproval = lazy(() => import("@food/pages/admin/restaurant/FoodApproval"));
+const FoodApproval = () => null;
 const OrdersPage = lazy(() => import("@food/pages/admin/orders/OrdersPage"));
-const OrderDetectDelivery = lazy(() => import("@food/pages/admin/OrderDetectDelivery"));
+const OrderDetectDelivery = () => null;
 const Category = lazy(() => import("@food/pages/admin/categories/Category"));
 const FeeSettings = lazy(() => import("@food/pages/admin/fee-settings/FeeSettings"));
 const ReferralSettings = lazy(() => import("@food/pages/admin/referral-settings/ReferralSettings"));
 // Restaurant Management
-const ZoneSetup = lazy(() => import("@food/pages/admin/restaurant/ZoneSetup"));
-const AddZone = lazy(() => import("@food/pages/admin/restaurant/AddZone"));
-const ViewZone = lazy(() => import("@food/pages/admin/restaurant/ViewZone"));
-const AllZonesMap = lazy(() => import("@food/pages/admin/restaurant/AllZonesMap"));
-const DeliveryBoyViewMap = lazy(() => import("@food/pages/admin/restaurant/DeliveryBoyViewMap"));
-const RestaurantsList = lazy(() => import("@food/pages/admin/restaurant/RestaurantsList"));
-const AddRestaurant = lazy(() => import("@food/pages/admin/restaurant/AddRestaurant"));
-const JoiningRequest = lazy(() => import("@food/pages/admin/restaurant/JoiningRequest"));
-const UnregisteredRestaurants = lazy(() => import("@food/pages/admin/restaurant/UnregisteredRestaurants"));
-const RestaurantCommission = lazy(() => import("@food/pages/admin/restaurant/RestaurantCommission"));
-const RestaurantComplaints = lazy(() => import("@food/pages/admin/restaurant/RestaurantComplaints"));
-const RestaurantReviews = lazy(() => import("@food/pages/admin/restaurant/RestaurantReviews"));
-const RestaurantsBulkImport = lazy(() => import("@food/pages/admin/restaurant/RestaurantsBulkImport"));
-const RestaurantsBulkExport = lazy(() => import("@food/pages/admin/restaurant/RestaurantsBulkExport"));
-const SubscriptionSettings = lazy(() => import("@food/pages/admin/restaurant/SubscriptionSettings"));
-const SubscriptionHistory = lazy(() => import("@food/pages/admin/restaurant/SubscriptionHistory"));
-const RestaurantSettings = lazy(() => import("@food/pages/admin/restaurant/RestaurantSettings"));
+const ZoneSetup = () => null;
+const AddZone = () => null;
+const ViewZone = () => null;
+const AllZonesMap = () => null;
+const DeliveryBoyViewMap = () => null;
+const RestaurantsList = () => null;
+const AddRestaurant = () => null;
+const JoiningRequest = () => null;
+const UnregisteredRestaurants = () => null;
+const RestaurantCommission = () => null;
+const RestaurantComplaints = () => null;
+const RestaurantReviews = () => null;
+const RestaurantsBulkImport = () => null;
+const RestaurantsBulkExport = () => null;
+const SubscriptionSettings = () => null;
+const SubscriptionHistory = () => null;
+const RestaurantSettings = () => null;
 // Food Management
 const FoodsList = lazy(() => import("@food/pages/admin/foods/FoodsList"));
 const AddonsList = lazy(() => import("@food/pages/admin/addons/AddonsList"));
@@ -63,37 +63,37 @@ const Bonus = lazy(() => import("@food/pages/admin/wallet/Bonus"));
 const LoyaltyPointReport = lazy(() => import("@food/pages/admin/loyalty-point/Report"));
 const SubscribedMailList = lazy(() => import("@food/pages/admin/SubscribedMailList"));
 // Deliveryman Management
-const DeliveryBoyCommission = lazy(() => import("@food/pages/admin/DeliveryBoyCommission"));
-const DeliveryCashLimit = lazy(() => import("@food/pages/admin/DeliveryCashLimit"));
-const CashLimitSettlement = lazy(() => import("@food/pages/admin/CashLimitSettlement"));
-const DeliveryWithdrawal = lazy(() => import("@food/pages/admin/DeliveryWithdrawal"));
-const DeliveryBoyWallet = lazy(() => import("@food/pages/admin/DeliveryBoyWallet"));
-const DeliveryEmergencyHelp = lazy(() => import("@food/pages/admin/DeliveryEmergencyHelp"));
-const DeliverySupportTickets = lazy(() => import("@food/pages/admin/DeliverySupportTickets"));
-const OrderReassignmentRequests = lazy(() => import("@food/pages/admin/OrderReassignmentRequests"));
-const JoinRequest = lazy(() => import("@food/pages/admin/delivery-partners/JoinRequest"));
-const AddDeliveryman = lazy(() => import("@food/pages/admin/delivery-partners/AddDeliveryman"));
-const DeliverymanList = lazy(() => import("@food/pages/admin/delivery-partners/DeliverymanList"));
-const DeliveryLiveTracking = lazy(() => import("@food/pages/admin/delivery-partners/DeliveryLiveTracking"));
-const DeliverymanReviews = lazy(() => import("@food/pages/admin/delivery-partners/DeliverymanReviews"));
-const DeliverymanBonus = lazy(() => import("@food/pages/admin/delivery-partners/DeliverymanBonus"));
-const EarningAddon = lazy(() => import("@food/pages/admin/delivery-partners/EarningAddon"));
-const EarningAddonHistory = lazy(() => import("@food/pages/admin/delivery-partners/EarningAddonHistory"));
-const DeliveryEarnings = lazy(() => import("@food/pages/admin/delivery-partners/DeliveryEarnings"));
+const DeliveryBoyCommission = () => null;
+const DeliveryCashLimit = () => null;
+const CashLimitSettlement = () => null;
+const DeliveryWithdrawal = () => null;
+const DeliveryBoyWallet = () => null;
+const DeliveryEmergencyHelp = () => null;
+const DeliverySupportTickets = () => null;
+const OrderReassignmentRequests = () => null;
+const JoinRequest = () => null;
+const AddDeliveryman = () => null;
+const DeliverymanList = () => null;
+const DeliveryLiveTracking = () => null;
+const DeliverymanReviews = () => null;
+const DeliverymanBonus = () => null;
+const EarningAddon = () => null;
+const EarningAddonHistory = () => null;
+const DeliveryEarnings = () => null;
 // Disbursement Management
 // Report Management
 const TransactionReport = lazy(() => import("@food/pages/admin/reports/TransactionReport"));
 const ExpenseReport = lazy(() => import("@food/pages/admin/reports/ExpenseReport"));
-const DisbursementReportRestaurants = lazy(() => import("@food/pages/admin/reports/DisbursementReportRestaurants"));
-const DisbursementReportDeliverymen = lazy(() => import("@food/pages/admin/reports/DisbursementReportDeliverymen"));
+const DisbursementReportRestaurants = () => null;
+const DisbursementReportDeliverymen = () => null;
 const RegularOrderReport = lazy(() => import("@food/pages/admin/reports/RegularOrderReport"));
 const CampaignOrderReport = lazy(() => import("@food/pages/admin/reports/CampaignOrderReport"));
-const RestaurantReport = lazy(() => import("@food/pages/admin/reports/RestaurantReport"));
+const RestaurantReport = () => null;
 const FeedbackExperienceReport = lazy(() => import("@food/pages/admin/reports/FeedbackExperienceReport"));
 const TaxReport = lazy(() => import("@food/pages/admin/reports/TaxReport"));
-const RestaurantVATReport = lazy(() => import("@food/pages/admin/reports/RestaurantVATReport"));
+const RestaurantVATReport = () => null;
 // Transaction Management
-const RestaurantWithdraws = lazy(() => import("@food/pages/admin/transactions/RestaurantWithdraws"));
+const RestaurantWithdraws = () => null;
 const WithdrawMethod = lazy(() => import("@food/pages/admin/transactions/WithdrawMethod"));
 // Employee Management
 const EmployeeRole = lazy(() => import("@food/pages/admin/employees/EmployeeRole"));
@@ -115,8 +115,8 @@ const ShippingPolicy = lazy(() => import("@food/pages/admin/settings/ShippingPol
 const CancellationPolicy = lazy(() => import("@food/pages/admin/settings/CancellationPolicy"));
 const ReactRegistration = lazy(() => import("@food/pages/admin/settings/ReactRegistration"));
 const SupportCMS = lazy(() => import("@food/pages/admin/settings/SupportCMS"));
-const CoinSettings = lazy(() => import("@food/pages/admin/settings/CoinSettings"));
-const CoinRequests = lazy(() => import("@food/pages/admin/settings/CoinRequests"));
+const CoinSettings = () => null;
+const CoinRequests = () => null;
 
 // System Settings
 const ThirdParty = lazy(() => import("@food/pages/admin/system/ThirdParty"));
@@ -137,7 +137,7 @@ const AddonActivation = lazy(() => import("@food/pages/admin/system/AddonActivat
 const LandingPageManagement = lazy(() => import("@food/pages/admin/system/LandingPageManagement"));
 // import DiningManagement from "@food/pages/admin/system/DiningManagement");
 // import DiningList from "@food/pages/admin/system/DiningList");
-const EditRestaurant = lazy(() => import("@food/pages/admin/restaurant/EditRestaurant"));
+const EditRestaurant = () => null;
 const AdminLogin = lazy(() => import("@food/pages/admin/auth/AdminLogin"));
 const AdminSignup = lazy(() => import("@food/pages/admin/auth/AdminSignup"));
 const AdminForgotPassword = lazy(() => import("@food/pages/admin/auth/AdminForgotPassword"));
@@ -370,9 +370,7 @@ export default function AdminRouter() {
             <Route path="gallery" element={<Gallery />} />
             <Route path="login-setup" element={<LoginSetup />} />
             
-            {/* Reward Coin System */}
-            <Route path="coin-settings" element={<CoinSettings />} />
-            <Route path="coin-requests" element={<CoinRequests />} />
+            {/* Reward Coin System (Removed) */}
             
             {/* PAGES & SOCIAL MEDIA */}
             <Route path="pages-social-media/terms" element={<TermsAndCondition />} />

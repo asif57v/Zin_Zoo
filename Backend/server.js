@@ -10,7 +10,6 @@ import { connectRedis, closeRedis } from './src/config/redis.js';
 import { initSocket } from './src/config/socket.js';
 import { initializeQueues, closeBullMQConnection } from './src/queues/index.js';
 import { expireExpiredOffers } from './src/modules/food/admin/services/admin.service.js';
-import { syncExpiredFssaiNotifications } from './src/modules/food/restaurant/services/fssaiExpiry.service.js';
 
 import { logger } from './src/utils/logger.js';
 import { initializeFirebaseRealtime } from './src/config/firebase.js';
@@ -18,7 +17,6 @@ import { initializeFirebaseRealtime } from './src/config/firebase.js';
 const SHUTDOWN_TIMEOUT_MS = 10000;
 let server = null;
 let expireOffersInterval = null;
-let fssaiExpiryInterval = null;
 
 const gracefulShutdown = async (signal) => {
     logger.info(`${signal} received, starting graceful shutdown`);
@@ -32,7 +30,6 @@ const gracefulShutdown = async (signal) => {
             await closeRedis();
             await closeBullMQConnection();
             if (expireOffersInterval) clearInterval(expireOffersInterval);
-            if (fssaiExpiryInterval) clearInterval(fssaiExpiryInterval);
             logger.info('Graceful shutdown complete');
             process.exit(0);
         } catch (err) {
@@ -125,15 +122,7 @@ const startServer = async () => {
         runExpire();
         expireOffersInterval = setInterval(runExpire, 5 * 60 * 1000);
 
-        const runFssaiExpirySync = async () => {
-            try {
-                await syncExpiredFssaiNotifications();
-            } catch (err) {
-                logger.error(`FSSAI expiry sync error: ${err.message}`);
-            }
-        };
-        runFssaiExpirySync();
-        fssaiExpiryInterval = setInterval(runFssaiExpirySync, 60 * 60 * 1000);
+        // SIGINT/SIGTERM handlers
 
         process.on('SIGINT', () => gracefulShutdown('SIGINT'));
         process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

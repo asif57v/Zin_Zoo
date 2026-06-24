@@ -21,7 +21,6 @@ const foodHeroBannerSchema = new mongoose.Schema(
         },
         linkedRestaurantIds: {
             type: [mongoose.Schema.Types.ObjectId],
-            ref: 'FoodRestaurant',
             default: []
         },
         sortOrder: {

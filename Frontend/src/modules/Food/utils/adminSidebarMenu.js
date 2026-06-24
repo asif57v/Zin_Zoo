@@ -105,24 +105,7 @@ export const adminSidebarMenu = [
       },
     ],
   },
-  {
-    type: "section",
-    label: "RESTAURANT MANAGEMENT",
-    items: [
-      {
-        type: "link",
-        label: "Zone Setup",
-        path: "/admin/food/zone-setup",
-        icon: "MapPin",
-      },
-      {
-        type: "link",
-        label: "Restaurant Coupons & Offers",
-        path: "/admin/food/coupons",
-        icon: "Gift",
-      },
-    ],
-  },
+
   // {
   //   type: "section",
   //   label: "ORDER MANAGEMENT",
@@ -155,14 +138,7 @@ export const adminSidebarMenu = [
       { type: "link", label: "Referral Settings", path: "/admin/food/referral-settings", icon: "Gift" },
     ],
   },
-  {
-    type: "section",
-    label: "REWARD COIN SYSTEM",
-    items: [
-      { type: "link", label: "Coin Settings", path: "/admin/food/coin-settings", icon: "Coins" },
-      { type: "link", label: "Redemption Requests", path: "/admin/food/coin-requests", icon: "List" },
-    ],
-  },
+
   {
     type: "section",
     label: "CUSTOMER MANAGEMENT",
@@ -231,13 +207,7 @@ export const adminSidebarMenu = [
       },
     ],
   },
-  {
-    type: "section",
-    label: "TRANSACTION MANAGEMENT",
-    items: [
-      { type: "link", label: "Restaurant Withdraws", path: "/admin/food/restaurant-withdraws", icon: "CreditCard" },
-    ],
-  },
+
   {
     type: "section",
     label: "BANNER SETTINGS",
@@ -247,14 +217,7 @@ export const adminSidebarMenu = [
 // { type: "link", label: "General Banners", path: "/admin/food/banners", icon: "Image" },
     ],
   },
-  {
-    type: "section",
-    label: "DINING MANAGEMENT",
-    items: [
-      // { type: "link", label: "Dining Banners", path: "/admin/food/dining-management", icon: "UtensilsCrossed" },
-      // { type: "link", label: "Dining List", path: "/admin/food/dining-list", icon: "FileText" },
-    ],
-  },
+
   {
     type: "section",
     label: "SYSTEM SETTINGS",

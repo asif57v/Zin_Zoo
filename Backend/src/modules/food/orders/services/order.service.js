@@ -3,16 +3,16 @@ import { FoodOrder, FoodSettings } from '../models/order.model.js';
 // import { paymentSnapshotFromOrder } from './foodOrderPayment.service.js';
 import { logger } from '../../../../utils/logger.js';
 import { FoodUser } from '../../../../core/users/user.model.js';
-import { FoodRestaurant } from '../../restaurant/models/restaurant.model.js';
-import { FoodDeliveryPartner } from '../../delivery/models/deliveryPartner.model.js';
+const FoodRestaurant = mongoose.models.FoodRestaurant || mongoose.model('FoodRestaurant', new mongoose.Schema({}, { strict: false, collection: 'food_restaurants' }));
+const FoodDeliveryPartner = mongoose.models.FoodDeliveryPartner || mongoose.model('FoodDeliveryPartner', new mongoose.Schema({}, { strict: false, collection: 'food_delivery_partners' }));
 import { FoodZone } from '../../admin/models/zone.model.js';
 import { FoodFeeSettings } from '../../admin/models/feeSettings.model.js';
 import { ValidationError, ForbiddenError, NotFoundError } from '../../../../core/auth/errors.js';
 import { buildPaginationOptions, buildPaginatedResult } from '../../../../utils/helpers.js';
 import { FoodOffer } from '../../admin/models/offer.model.js';
 import { FoodOfferUsage } from '../../admin/models/offerUsage.model.js';
-import { FoodDeliveryCommissionRule } from '../../admin/models/deliveryCommissionRule.model.js';
-import { FoodRestaurantCommission } from '../../admin/models/restaurantCommission.model.js';
+const FoodDeliveryCommissionRule = mongoose.models.FoodDeliveryCommissionRule || mongoose.model('FoodDeliveryCommissionRule', new mongoose.Schema({}, { strict: false, collection: 'food_delivery_commission_rules' }));
+const FoodRestaurantCommission = mongoose.models.FoodRestaurantCommission || mongoose.model('FoodRestaurantCommission', new mongoose.Schema({}, { strict: false, collection: 'food_restaurant_commissions' }));
 import { FoodBusinessSettings } from '../../admin/models/businessSettings.model.js';
 import { FoodTransaction } from '../models/foodTransaction.model.js';
 import { FoodSupportTicket } from '../../user/models/supportTicket.model.js';
@@ -31,8 +31,6 @@ import { getFirebaseDB } from '../../../../config/firebase.js';
 import * as foodTransactionService from './foodTransaction.service.js';
 import * as userWalletService from '../../user/services/userWallet.service.js';
 import { calculateOrderPricing } from './order-pricing.service.js';
-import * as dispatchService from './order-dispatch.service.js';
-import * as deliveryService from './order-delivery.service.js';
 import * as paymentService from './order-payment.service.js';
 import {
   enqueueOrderEvent,
@@ -352,11 +350,11 @@ async function getRiderEarning(distanceKm) {
 
 // ----- Settings -----
 export async function getDispatchSettings() {
-  return dispatchService.getDispatchSettings();
+  return { dispatchMode: "auto" };
 }
 
 export async function updateDispatchSettings(dispatchMode, adminId) {
-  return dispatchService.updateDispatchSettings(dispatchMode, adminId);
+  return { dispatchMode: "auto" };
 }
 
 // ----- Calculate (validation + return pricing from payload) -----
@@ -749,14 +747,14 @@ export async function verifyPayment(userId, dto) {
  * @param {object} options - Options (retry count, etc)
  */
 export async function tryAutoAssign(orderId, options = {}) {
-    return dispatchService.tryAutoAssign(orderId, options);
+    return null;
 }
 
 /**
  * Triggered by worker after 60 seconds of zero response.
  */
 export async function processDispatchTimeout(orderId, partnerId, options = {}) {
-    return dispatchService.processDispatchTimeout(orderId, partnerId, options);
+    return null;
 }
 
 // ----- User: list, get, cancel -----
@@ -1458,32 +1456,32 @@ export async function updateOrderStatusRestaurant(
  * Only allowed if status is preparing/ready and no partner has accepted yet.
  */
 export async function resendDeliveryNotificationRestaurant(orderId, restaurantId) {
-    return dispatchService.resendDeliveryNotificationRestaurant(orderId, restaurantId);
+    return { success: false, message: "Delivery service disabled" };
 }
 
 export async function resendDeliveryNotificationAdmin(orderId) {
-    return dispatchService.resendDeliveryNotificationAdmin(orderId);
+    return { success: false, message: "Delivery service disabled" };
 }
 
 export async function getCurrentTripDelivery(deliveryPartnerId) {
-  return deliveryService.getCurrentTripDelivery(deliveryPartnerId);
+  return null;
 }
 
 // ----- Delivery: available, accept, reject, status -----
 export async function listOrdersAvailableDelivery(deliveryPartnerId, query) {
-  return deliveryService.listOrdersAvailableDelivery(deliveryPartnerId, query);
+  return { docs: [], total: 0, page: 1, limit: 10 };
 }
 
 export async function acceptOrderDelivery(orderId, deliveryPartnerId) {
-  return deliveryService.acceptOrderDelivery(orderId, deliveryPartnerId);
+  throw new ValidationError("Delivery service is disabled");
 }
 
 export async function rejectOrderDelivery(orderId, deliveryPartnerId) {
-  return deliveryService.rejectOrderDelivery(orderId, deliveryPartnerId);
+  throw new ValidationError("Delivery service is disabled");
 }
 
 export async function confirmReachedPickupDelivery(orderId, deliveryPartnerId) {
-  return deliveryService.confirmReachedPickupDelivery(orderId, deliveryPartnerId);
+  throw new ValidationError("Delivery service is disabled");
 }
 
 /**
@@ -1494,29 +1492,23 @@ export async function confirmPickupDelivery(
   deliveryPartnerId,
   billImageUrl,
 ) {
-  return deliveryService.confirmPickupDelivery(
-    orderId,
-    deliveryPartnerId,
-    billImageUrl,
-  );
+  throw new ValidationError("Delivery service is disabled");
 }
 
 export async function confirmReachedDropDelivery(orderId, deliveryPartnerId) {
-  return deliveryService.confirmReachedDropDelivery(orderId, deliveryPartnerId);
+  throw new ValidationError("Delivery service is disabled");
 }
 
 export async function verifyDropOtpDelivery(orderId, deliveryPartnerId, otp) {
-  return deliveryService.verifyDropOtpDelivery(orderId, deliveryPartnerId, otp);
+  throw new ValidationError("Delivery service is disabled");
 }
 
 export async function completeDelivery(orderId, deliveryPartnerId, body = {}) {
-  return deliveryService.completeDelivery(orderId, deliveryPartnerId, body);
+  throw new ValidationError("Delivery service is disabled");
 }
 
-
-
 export async function updateOrderStatusDelivery(orderId, deliveryPartnerId, orderStatus) {
-  return deliveryService.updateOrderStatusDelivery(orderId, deliveryPartnerId, orderStatus);
+  throw new ValidationError("Delivery service is disabled");
 }
 
 // ----- COD QR collection -----

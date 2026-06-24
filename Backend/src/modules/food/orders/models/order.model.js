@@ -108,12 +108,12 @@ const dispatchSchema = new mongoose.Schema(
             enum: ['unassigned', 'assigned', 'accepted', 'rejected', 'cancelled'],
             default: 'unassigned'
         },
-        deliveryPartnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodDeliveryPartner', default: null },
+        deliveryPartnerId: { type: mongoose.Schema.Types.ObjectId, default: null },
         assignedAt: { type: Date },
         acceptedAt: { type: Date },
         /** List of partners who were offered this order (to avoid repeats and track timeouts) */
         offeredTo: [{
-            partnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodDeliveryPartner' },
+            partnerId: { type: mongoose.Schema.Types.ObjectId },
             at: { type: Date, default: Date.now },
             action: { type: String, enum: ['offered', 'rejected', 'timeout', 'deassigned'], default: 'offered' }
         }],
@@ -206,8 +206,7 @@ const orderSchema = new mongoose.Schema(
         },
         restaurantId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'FoodRestaurant',
-            required: true
+            required: false
         },
         zoneId: {
             type: mongoose.Schema.Types.ObjectId,

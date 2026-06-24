@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import { Transaction } from './models/transaction.model.js';
 import { FoodUserWallet } from '../../modules/food/user/models/userWallet.model.js';
-import { FoodRestaurantWallet } from '../../modules/food/restaurant/models/restaurantWallet.model.js';
-import { FoodDeliveryWallet } from '../../modules/food/delivery/models/deliveryWallet.model.js';
+const FoodRestaurantWallet = mongoose.models.FoodRestaurantWallet || mongoose.model('FoodRestaurantWallet', new mongoose.Schema({}, { strict: false, collection: 'food_restaurant_wallets' }));
+const FoodDeliveryWallet = mongoose.models.FoodDeliveryWallet || mongoose.model('FoodDeliveryWallet', new mongoose.Schema({}, { strict: false, collection: 'food_delivery_wallets' }));
 import { FoodAdminWallet } from '../../modules/food/admin/models/adminWallet.model.js';
 import { logger } from '../../utils/logger.js';
 

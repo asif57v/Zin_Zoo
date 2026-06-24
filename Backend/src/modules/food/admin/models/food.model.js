@@ -10,7 +10,7 @@ const foodVariantSchema = new mongoose.Schema(
 
 const foodSchema = new mongoose.Schema(
     {
-        restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodRestaurant', required: true, index: true },
+        restaurantId: { type: mongoose.Schema.Types.ObjectId, required: false, index: true },
         categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodCategory', index: true },
         categoryName: { type: String, trim: true, default: '' },
         name: { type: String, required: true, trim: true, index: true },

@@ -1,5 +1,5 @@
 import { FoodTransaction } from '../models/foodTransaction.model.js';
-import { FoodRestaurantCommission } from '../../admin/models/restaurantCommission.model.js';
+const FoodRestaurantCommission = mongoose.models.FoodRestaurantCommission || mongoose.model('FoodRestaurantCommission', new mongoose.Schema({}, { strict: false, collection: 'food_restaurant_commissions' }));
 import mongoose from 'mongoose';
 
 const RESTAURANT_COMMISSION_CACHE_MS = 60 * 1000;
@@ -248,15 +248,7 @@ export async function updateTransactionStatus(orderId, kind, details = {}) {
 
     await transaction.save();
 
-    // Auto-settle subscription dues as soon as earnings become withdrawable.
-    if (details?.status === 'captured' && transaction?.restaurantId) {
-        try {
-            const { attemptAutoSettleSubscriptionDue } = await import('../../restaurant/services/subscriptionPlan.service.js');
-            await attemptAutoSettleSubscriptionDue(transaction.restaurantId);
-        } catch (_error) {
-            // Fail-safe: transaction update must not fail due to subscription settlement side-effect.
-        }
-    }
+    // Auto-settle subscription dues (removed since restaurant service is deleted)
 
     return transaction;
 }

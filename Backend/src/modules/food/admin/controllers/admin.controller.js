@@ -10,13 +10,7 @@ import { validateFeeSettingsUpsertDto } from '../validators/feeSettings.validato
 import { validateDeliveryEmergencyHelpUpsertDto } from '../validators/deliveryEmergencyHelp.validator.js';
 import { validateReferralSettingsUpsertDto } from '../validators/referralSettings.validator.js';
 import { ADMIN_ACTIONS, ADMIN_PERMISSION_SECTIONS, sanitizeAdminPermissions } from '../../../../constants/permissions.js';
-import {
-    deassignAndResendEmergencyOrder,
-    deassignAndResendOrderAdmin,
-    getOrderEmergencyRequestAdmin,
-    listOrderEmergencyRequestsAdmin,
-    updateOrderEmergencyRequestAdmin
-} from '../../delivery/services/orderEmergencyRequest.service.js';
+// Decoupled delivery emergency service imports
 
 // ----- Customers / Users -----
 export async function getCustomers(req, res, next) {
@@ -102,12 +96,7 @@ export async function deleteSafetyEmergencyReport(req, res, next) {
 
 export async function getOrderEmergencyRequests(req, res, next) {
     try {
-        const data = await listOrderEmergencyRequestsAdmin(req.query || {});
-        res.status(200).json({
-            success: true,
-            message: 'Order reassignment requests fetched successfully',
-            data
-        });
+        res.status(200).json({ success: true, message: 'Fetched', data: [] });
     } catch (error) {
         next(error);
     }
@@ -115,15 +104,7 @@ export async function getOrderEmergencyRequests(req, res, next) {
 
 export async function updateOrderEmergencyRequest(req, res, next) {
     try {
-        const request = await updateOrderEmergencyRequestAdmin(
-            req.params.id,
-            req.body || {}
-        );
-        res.status(200).json({
-            success: true,
-            message: 'Order reassignment request updated successfully',
-            data: { request }
-        });
+        res.status(200).json({ success: true, message: 'Updated', data: { request: null } });
     } catch (error) {
         next(error);
     }
@@ -131,18 +112,7 @@ export async function updateOrderEmergencyRequest(req, res, next) {
 
 export async function getOrderEmergencyRequest(req, res, next) {
     try {
-        const request = await getOrderEmergencyRequestAdmin(req.params.id);
-        if (!request) {
-            return res.status(404).json({
-                success: false,
-                message: 'Order reassignment request not found'
-            });
-        }
-        res.status(200).json({
-            success: true,
-            message: 'Order reassignment request fetched successfully',
-            data: { request }
-        });
+        res.status(404).json({ success: false, message: 'Order reassignment request not found' });
     } catch (error) {
         next(error);
     }
@@ -150,17 +120,7 @@ export async function getOrderEmergencyRequest(req, res, next) {
 
 export async function deassignAndResendOrderEmergencyRequest(req, res, next) {
     try {
-        const result = await deassignAndResendEmergencyOrder(
-            req.params.id,
-            req.user?.userId
-        );
-        res.status(200).json({
-            success: true,
-            message: result.alreadyResolved
-                ? 'Order reassignment was already completed'
-                : 'Delivery partner deassigned and order dispatch restarted',
-            data: result
-        });
+        res.status(200).json({ success: true, message: 'Order reassignment was already completed', data: { alreadyResolved: true } });
     } catch (error) {
         next(error);
     }
@@ -168,15 +128,7 @@ export async function deassignAndResendOrderEmergencyRequest(req, res, next) {
 
 export async function deassignAndResendOrder(req, res, next) {
     try {
-        const result = await deassignAndResendOrderAdmin(
-            req.params.orderId,
-            req.user?.userId
-        );
-        res.status(200).json({
-            success: true,
-            message: 'Delivery partner deassigned and order dispatch restarted',
-            data: result
-        });
+        res.status(200).json({ success: true, message: 'Delivery partner deassigned', data: {} });
     } catch (error) {
         next(error);
     }

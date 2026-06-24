@@ -16,8 +16,8 @@ const foodCategorySchema = new mongoose.Schema(
          *
          * Note: existing categories (created by admin historically) should be treated as approved.
          */
-        restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodRestaurant', index: true, default: undefined },
-        createdByRestaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodRestaurant', index: true, default: undefined },
+        restaurantId: { type: mongoose.Schema.Types.ObjectId, index: true, default: undefined },
+        createdByRestaurantId: { type: mongoose.Schema.Types.ObjectId, index: true, default: undefined },
         approvalStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved', index: true },
         isApproved: { type: Boolean, default: true, index: true },
         rejectionReason: { type: String, trim: true, default: '' },

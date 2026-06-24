@@ -5,8 +5,8 @@ const foodTransactionSchema = new mongoose.Schema({
     orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodOrder', required: true, unique: true, index: true },
 
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodUser', required: true, index: true },
-    restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodRestaurant', required: true, index: true },
-    deliveryPartnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodDeliveryPartner', index: true },
+    restaurantId: { type: mongoose.Schema.Types.ObjectId, required: false, default: null, index: true },
+    deliveryPartnerId: { type: mongoose.Schema.Types.ObjectId, default: null, index: true },
 
     // Core Payment Info
     paymentMethod: { 

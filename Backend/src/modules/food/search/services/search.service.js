@@ -1,4 +1,4 @@
-import { FoodRestaurant } from '../../restaurant/models/restaurant.model.js';
+const FoodRestaurant = mongoose.models.FoodRestaurant || mongoose.model('FoodRestaurant', new mongoose.Schema({}, { strict: false, collection: 'food_restaurants' }));
 import { FoodItem } from '../../admin/models/food.model.js';
 import { FoodCategory } from '../../admin/models/category.model.js';
 import mongoose from 'mongoose';

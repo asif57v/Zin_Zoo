@@ -7,7 +7,6 @@ import {
     upsertFirebaseDeviceToken
 } from './firebase.service.js';
 import { FoodUser } from '../users/user.model.js';
-import { FoodRestaurant } from '../../modules/food/restaurant/models/restaurant.model.js';
 import { normalizePlatform } from '../../utils/platform.js';
 
 const router = express.Router();

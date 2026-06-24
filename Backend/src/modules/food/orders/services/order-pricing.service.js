@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { FoodOrder } from '../models/order.model.js';
-import { FoodRestaurant } from '../../restaurant/models/restaurant.model.js';
+const FoodRestaurant = mongoose.models.FoodRestaurant || mongoose.model('FoodRestaurant', new mongoose.Schema({}, { strict: false, collection: 'food_restaurants' }));
 import { FoodFeeSettings } from '../../admin/models/feeSettings.model.js';
 import { FoodOffer } from '../../admin/models/offer.model.js';
 import { FoodOfferUsage } from '../../admin/models/offerUsage.model.js';
@@ -8,12 +8,15 @@ import { ValidationError } from '../../../../core/auth/errors.js';
 import { haversineKm } from './order.helpers.js';
 
 export async function calculateOrderPricing(userId, dto) {
-  const restaurant = await FoodRestaurant.findById(dto.restaurantId)
-    .select("status location")
-    .lean();
-  if (!restaurant) throw new ValidationError("Restaurant not found");
-  if (restaurant.status !== "approved")
-    throw new ValidationError("Restaurant not available");
+  let restaurant = null;
+  if (dto.restaurantId) {
+    restaurant = await FoodRestaurant.findById(dto.restaurantId)
+      .select("status location")
+      .lean();
+    if (!restaurant) throw new ValidationError("Restaurant not found");
+    if (restaurant.status !== "approved")
+      throw new ValidationError("Restaurant not available");
+  }
 
   const items = Array.isArray(dto.items) ? dto.items : [];
   const subtotal = items.reduce(
