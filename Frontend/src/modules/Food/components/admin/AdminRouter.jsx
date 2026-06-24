@@ -158,14 +158,7 @@ function SuperPowersRouteGuard({ children }) {
   return children;
 }
 
-function AdminServicePlaceholder({ title }) {
-  return (
-    <div className="p-8 text-center text-gray-500 bg-white min-h-[50vh] flex flex-col items-center justify-center border rounded-xl m-4">
-      <h2 className="text-xl font-bold text-gray-800 mb-2">{title}</h2>
-      <p className="text-sm text-gray-500">Service Management Module - Coming Soon</p>
-    </div>
-  )
-}
+const AdminServicePlaceholder = lazy(() => import("./AdminServicePlaceholder"));
 
 function UnregisteredRestaurantsRouteGuard() {
   const [loading, setLoading] = useState(true);
