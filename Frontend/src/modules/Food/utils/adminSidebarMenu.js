@@ -43,12 +43,6 @@ export const adminSidebarMenu = [
     label: "GROCERY MANAGEMENT",
     items: [
       {
-        type: "link",
-        label: "Product Approval",
-        path: "/admin/food/grocery-product-approval",
-        icon: "CheckCircle2",
-      },
-      {
         type: "expandable",
         label: "Products",
         icon: "ShoppingBag",
@@ -160,12 +154,6 @@ export const adminSidebarMenu = [
           { label: "Refunded", path: "/admin/food/orders/refunded" },
           { label: "Offline Payments", path: "/admin/food/orders/offline-payments" },
         ],
-      },
-      {
-        type: "link",
-        label: "Order Detect Delivery",
-        path: "/admin/food/order-detect-delivery",
-        icon: "Truck",
       },
     ],
   },
