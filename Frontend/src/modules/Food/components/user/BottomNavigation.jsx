@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { Tag, User, Truck, ShoppingCart } from "lucide-react"
+import { Tag, User, Truck, ShoppingCart, Briefcase } from "lucide-react"
 
 export default function BottomNavigation() {
   const location = useLocation()
@@ -9,16 +9,19 @@ export default function BottomNavigation() {
   const isCart = pathname === "/food/cart" || pathname.startsWith("/food/user/cart")
   const isUnder250 = pathname === "/food/under-250" || pathname.startsWith("/food/user/under-250")
   const isProfile = pathname.startsWith("/food/profile") || pathname.startsWith("/food/user/profile")
+  const isServices = pathname === "/food/services" || pathname.startsWith("/food/user/services")
   const isDelivery =
     !isCart &&
     !isUnder250 &&
     !isProfile &&
+    !isServices &&
     (pathname === "/food" ||
       pathname === "/food/" ||
       pathname === "/food/user" ||
       (pathname.startsWith("/food/user") &&
         !pathname.includes("/cart") &&
         !pathname.includes("/under-250") &&
+        !pathname.includes("/services") &&
         !pathname.includes("/profile")))
 
   const activeColor = "var(--module-theme-color, #FA0272)"
@@ -44,7 +47,7 @@ export default function BottomNavigation() {
             <Truck className={`h-5 w-5 transition-transform duration-300 ${isDelivery ? "scale-110" : "text-gray-500 dark:text-gray-400"}`} strokeWidth={isDelivery ? 2.5 : 2} style={isDelivery ? { color: activeColor, fill: activeFill } : undefined} />
           </div>
           <span className={`text-[10px] sm:text-xs font-semibold tracking-wide transition-all ${isDelivery ? "" : "text-gray-500 dark:text-gray-400 opacity-80"}`}>
-            Delivery
+            Food
           </span>
         </Link>
 
@@ -78,7 +81,24 @@ export default function BottomNavigation() {
             <Tag className={`h-5 w-5 transition-transform duration-300 ${isUnder250 ? "scale-110" : "text-gray-500 dark:text-gray-400"}`} strokeWidth={isUnder250 ? 2.5 : 2} style={isUnder250 ? { color: activeColor, fill: activeFill } : undefined} />
           </div>
           <span className={`text-[10px] sm:text-xs font-semibold tracking-wide transition-all ${isUnder250 ? "" : "text-gray-500 dark:text-gray-400 opacity-80"}`}>
-            Switch 99
+            Grocery
+          </span>
+        </Link>
+
+        {/* Services Tab */}
+        <Link
+          to="/food/user/services"
+          className={`flex flex-1 flex-col items-center justify-center gap-1 px-1 py-1.5 transition-all duration-300 relative rounded-full ${isServices
+              ? ""
+              : "text-gray-500 dark:text-gray-400 hover:bg-gray-100/50 dark:hover:bg-gray-800/50"
+            }`}
+          style={isServices ? { color: activeColor, backgroundColor: activeBg } : undefined}
+        >
+          <div className="relative">
+            <Briefcase className={`h-5 w-5 transition-transform duration-300 ${isServices ? "scale-110" : "text-gray-500 dark:text-gray-400"}`} strokeWidth={isServices ? 2.5 : 2} style={isServices ? { color: activeColor, fill: activeFill } : undefined} />
+          </div>
+          <span className={`text-[10px] sm:text-xs font-semibold tracking-wide transition-all ${isServices ? "" : "text-gray-500 dark:text-gray-400 opacity-80"}`}>
+            Services
           </span>
         </Link>
 

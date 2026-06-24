@@ -22,7 +22,7 @@ const filterOptions = [
   { id: 'under-30-mins', label: 'Under 30 mins' },
   { id: 'price-match', label: 'Price Match', hasIcon: true },
   { id: 'flat-50-off', label: 'Flat 50% OFF', hasIcon: true },
-  { id: 'under-250', label: 'Switch 99' },
+  { id: 'under-250', label: 'Grocery' },
   { id: 'rating-4-plus', label: 'Rating 4.0+' },
 ]
 const SEARCH_HISTORY_KEY = "user_recent_searches_v1"
