@@ -116,19 +116,10 @@ export const adminSidebarMenu = [
         icon: "MapPin",
       },
       {
-        type: "expandable",
-        label: "Restaurants",
-        icon: "UtensilsCrossed",
-        subItems: [
-          { label: "Restaurants List", path: "/admin/food/restaurants" },
-          { label: "New Joining Request", path: "/admin/food/restaurants/joining-request" },
-          { label: "Unregistered Restaurants", path: "/admin/food/restaurants/unregistered" },
-          { label: "Restaurant Reviews", path: "/admin/food/restaurants/reviews" },
-          { label: "Restaurant Complaints", path: "/admin/food/restaurants/complaints" },
-          { label: "Restaurant Settings", path: "/admin/food/restaurants/settings" },
-          { label: "Subscription Settings", path: "/admin/food/restaurants/subscription-settings" },
-          { label: "Subscription History", path: "/admin/food/restaurants/subscription-history" },
-        ],
+        type: "link",
+        label: "Restaurant Coupons & Offers",
+        path: "/admin/food/coupons",
+        icon: "Gift",
       },
     ],
   },
@@ -157,18 +148,6 @@ export const adminSidebarMenu = [
   //     },
   //   ],
   // },
-  {
-    type: "section",
-    label: "PROMOTIONS MANAGEMENT",
-    items: [
-      {
-        type: "link",
-        label: "Restaurant Coupons & Offers",
-        path: "/admin/food/coupons",
-        icon: "Gift",
-      },
-    ],
-  },
   {
     type: "section",
     label: "REFERRAL & REWARDS",
@@ -244,12 +223,6 @@ export const adminSidebarMenu = [
       { type: "link", label: "Transaction Report", path: "/admin/food/transaction-report", icon: "FileText" },
       { type: "link", label: "Order Report", path: "/admin/food/order-report/regular", icon: "FileText" },
       { type: "link", label: "Tax Report", path: "/admin/food/tax-report", icon: "Receipt" },
-      {
-        type: "expandable",
-        label: "Restaurant Report",
-        icon: "FileText",
-        subItems: [{ label: "Restaurant Report", path: "/admin/food/restaurant-report" }],
-      },
       {
         type: "expandable",
         label: "Customer Report",
