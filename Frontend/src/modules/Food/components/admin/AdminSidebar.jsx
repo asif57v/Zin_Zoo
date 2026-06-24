@@ -48,6 +48,7 @@ import {
   Lock,
   Briefcase,
   LayoutGrid,
+  ShoppingBag,
 } from "lucide-react"
 import { cn } from "@food/utils/utils"
 import { Input } from "@food/components/ui/input"
@@ -107,6 +108,7 @@ const iconMap = {
   X,
   Briefcase,
   LayoutGrid,
+  ShoppingBag,
 }
 
 const buildLabelDictionary = (menu = []) => {

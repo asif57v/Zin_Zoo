@@ -40,6 +40,42 @@ export const adminSidebarMenu = [
   },
   {
     type: "section",
+    label: "GROCERY MANAGEMENT",
+    items: [
+      {
+        type: "link",
+        label: "Product Approval",
+        path: "/admin/food/grocery-product-approval",
+        icon: "CheckCircle2",
+      },
+      {
+        type: "expandable",
+        label: "Products",
+        icon: "ShoppingBag",
+        subItems: [
+          { label: "Products List", path: "/admin/food/grocery-products" },
+        ],
+      },
+      {
+        type: "expandable",
+        label: "Orders",
+        icon: "FileText",
+        subItems: [
+          { label: "All Orders", path: "/admin/food/grocery-orders/all" },
+          { label: "Pending Orders", path: "/admin/food/grocery-orders/pending" },
+          { label: "Delivered Orders", path: "/admin/food/grocery-orders/delivered" },
+        ],
+      },
+      {
+        type: "link",
+        label: "Categories",
+        icon: "LayoutGrid",
+        path: "/admin/food/grocery-categories",
+      },
+    ],
+  },
+  {
+    type: "section",
     label: "SERVICE MANAGEMENT",
     items: [
       {

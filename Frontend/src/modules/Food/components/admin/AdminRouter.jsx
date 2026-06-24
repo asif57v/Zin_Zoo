@@ -292,6 +292,14 @@ export default function AdminRouter() {
             <Route path="food/list" element={<FoodsList />} />
             <Route path="addons" element={<AddonsList />} />
 
+            {/* GROCERY MANAGEMENT */}
+            <Route path="grocery-product-approval" element={<AdminServicePlaceholder title="Product Approval" />} />
+            <Route path="grocery-products" element={<AdminServicePlaceholder title="Products List" />} />
+            <Route path="grocery-orders/all" element={<AdminServicePlaceholder title="All Orders" />} />
+            <Route path="grocery-orders/pending" element={<AdminServicePlaceholder title="Pending Orders" />} />
+            <Route path="grocery-orders/delivered" element={<AdminServicePlaceholder title="Delivered Orders" />} />
+            <Route path="grocery-categories" element={<AdminServicePlaceholder title="Grocery Categories" />} />
+
             {/* SERVICE MANAGEMENT */}
             <Route path="service-approval" element={<AdminServicePlaceholder title="Service Approval" />} />
             <Route path="services" element={<AdminServicePlaceholder title="Services List" />} />
