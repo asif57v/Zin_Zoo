@@ -158,6 +158,15 @@ function SuperPowersRouteGuard({ children }) {
   return children;
 }
 
+function AdminServicePlaceholder({ title }) {
+  return (
+    <div className="p-8 text-center text-gray-500 bg-white min-h-[50vh] flex flex-col items-center justify-center border rounded-xl m-4">
+      <h2 className="text-xl font-bold text-gray-800 mb-2">{title}</h2>
+      <p className="text-sm text-gray-500">Service Management Module - Coming Soon</p>
+    </div>
+  )
+}
+
 function UnregisteredRestaurantsRouteGuard() {
   const [loading, setLoading] = useState(true);
   const [isEnabled, setIsEnabled] = useState(true);
@@ -282,6 +291,15 @@ export default function AdminRouter() {
             <Route path="foods" element={<FoodsList />} />
             <Route path="food/list" element={<FoodsList />} />
             <Route path="addons" element={<AddonsList />} />
+
+            {/* SERVICE MANAGEMENT */}
+            <Route path="service-approval" element={<AdminServicePlaceholder title="Service Approval" />} />
+            <Route path="services" element={<AdminServicePlaceholder title="Services List" />} />
+            <Route path="service-addons" element={<AdminServicePlaceholder title="Service Addons List" />} />
+            <Route path="bookings/all" element={<AdminServicePlaceholder title="All Bookings" />} />
+            <Route path="bookings/pending" element={<AdminServicePlaceholder title="Pending Bookings" />} />
+            <Route path="bookings/completed" element={<AdminServicePlaceholder title="Completed Bookings" />} />
+            <Route path="service-categories" element={<AdminServicePlaceholder title="Service Categories" />} />
 
             {/* PROMOTIONS, CUSTOMERS, DELIVERYMEN, etc. */}
             <Route path="campaigns/basic" element={<BasicCampaign />} />

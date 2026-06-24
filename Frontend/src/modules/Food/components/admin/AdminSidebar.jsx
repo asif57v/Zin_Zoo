@@ -46,6 +46,8 @@ import {
   IndianRupee,
   PiggyBank,
   Lock,
+  Briefcase,
+  LayoutGrid,
 } from "lucide-react"
 import { cn } from "@food/utils/utils"
 import { Input } from "@food/components/ui/input"
@@ -103,6 +105,8 @@ const iconMap = {
   PiggyBank,
   Lock,
   X,
+  Briefcase,
+  LayoutGrid,
 }
 
 const buildLabelDictionary = (menu = []) => {

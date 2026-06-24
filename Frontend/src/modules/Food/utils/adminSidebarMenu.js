@@ -40,6 +40,43 @@ export const adminSidebarMenu = [
   },
   {
     type: "section",
+    label: "SERVICE MANAGEMENT",
+    items: [
+      {
+        type: "link",
+        label: "Service Approval",
+        path: "/admin/food/service-approval",
+        icon: "CheckCircle2",
+      },
+      {
+        type: "expandable",
+        label: "Services",
+        icon: "Briefcase",
+        subItems: [
+          { label: "Services List", path: "/admin/food/services" },
+          { label: "Service Addons List", path: "/admin/food/service-addons" },
+        ],
+      },
+      {
+        type: "expandable",
+        label: "Bookings",
+        icon: "Calendar",
+        subItems: [
+          { label: "All Bookings", path: "/admin/food/bookings/all" },
+          { label: "Pending Bookings", path: "/admin/food/bookings/pending" },
+          { label: "Completed Bookings", path: "/admin/food/bookings/completed" },
+        ],
+      },
+      {
+        type: "link",
+        label: "Categories",
+        icon: "LayoutGrid",
+        path: "/admin/food/service-categories",
+      },
+    ],
+  },
+  {
+    type: "section",
     label: "RESTAURANT MANAGEMENT",
     items: [
       {
