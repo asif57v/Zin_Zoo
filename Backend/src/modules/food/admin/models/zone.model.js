@@ -47,6 +47,19 @@ const zoneSchema = new mongoose.Schema(
                 message: 'Zone must have at least 3 coordinates (polygon).'
             }
         },
+        latitude: {
+            type: Number,
+            required: false
+        },
+        longitude: {
+            type: Number,
+            required: false
+        },
+        address: {
+            type: String,
+            trim: true,
+            required: false
+        },
         isActive: {
             type: Boolean,
             default: true,
