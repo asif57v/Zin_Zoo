@@ -50,10 +50,8 @@ export default function AddZone() {
   const mapInstanceRef = useRef(null)
   const markerRef = useRef(null)
   const autocompleteInputRef = useRef(null)
-  const autocompleteServiceRef = useRef(null)
-  const placesServiceRef = useRef(null)
+  const autocompleteRef = useRef(null)
   const geocoderRef = useRef(null)
-  const suggestionsDebounceRef = useRef(null)
   const existingZonesPolygonsRef = useRef([])
 
   const [googleMapsApiKey, setGoogleMapsApiKey] = useState("")
@@ -72,32 +70,31 @@ export default function AddZone() {
   // Selected Location State
   const [selectedLocation, setSelectedLocation] = useState(null)
   const [locationSearch, setLocationSearch] = useState("")
-  const [searchSuggestions, setSearchSuggestions] = useState([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-
-  // Clear debounce timer on unmount
-  useEffect(() => {
-    return () => {
-      if (suggestionsDebounceRef.current) {
-        clearTimeout(suggestionsDebounceRef.current)
-      }
-    }
-  }, [])
 
   useEffect(() => {
     fetchExistingZones()
     loadGoogleMaps()
   }, [id])
 
-  // Initialize Services when map loads
+  // Initialize Places Autocomplete when map is loaded
   useEffect(() => {
-    if (!mapLoading && mapInstanceRef.current && window.google?.maps?.places) {
-      if (!autocompleteServiceRef.current) {
-        autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService()
-      }
-      if (!placesServiceRef.current) {
-        placesServiceRef.current = new window.google.maps.places.PlacesService(mapInstanceRef.current)
-      }
+    if (!mapLoading && mapInstanceRef.current && autocompleteInputRef.current && window.google?.maps?.places && !autocompleteRef.current) {
+      const autocomplete = new window.google.maps.places.Autocomplete(autocompleteInputRef.current, {
+        componentRestrictions: { country: "in" }
+      })
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace()
+        if (place.geometry && place.geometry.location && mapInstanceRef.current) {
+          const lat = place.geometry.location.lat()
+          const lng = place.geometry.location.lng()
+          const address = place.formatted_address || place.name || ""
+          handleLocationSelect(lat, lng, address, false)
+        }
+      })
+
+      autocompleteRef.current = autocomplete
+
       if (!geocoderRef.current) {
         geocoderRef.current = new window.google.maps.Geocoder()
       }
@@ -341,57 +338,7 @@ export default function AddZone() {
     }
   }
 
-  // Method 1 - Google Autocomplete Predictions
-  const handleLocationSearchChange = (value) => {
-    setLocationSearch(value)
-    setShowSuggestions(true)
-
-    if (suggestionsDebounceRef.current) {
-      clearTimeout(suggestionsDebounceRef.current)
-    }
-
-    const query = String(value || "").trim()
-    if (!query || !autocompleteServiceRef.current || !window.google?.maps?.places?.PlacesServiceStatus) {
-      setSearchSuggestions([])
-      return
-    }
-
-    suggestionsDebounceRef.current = setTimeout(() => {
-      autocompleteServiceRef.current.getPlacePredictions(
-        {
-          input: query,
-          componentRestrictions: { country: "in" },
-          types: ["geocode", "establishment"]
-        },
-        (predictions = [], status) => {
-          const ok = status === window.google?.maps?.places?.PlacesServiceStatus?.OK
-          setSearchSuggestions(ok ? predictions.slice(0, 6) : [])
-        }
-      )
-    }, 200)
-  }
-
-  // Method 1 Selection
-  const handleSuggestionSelect = (suggestion) => {
-    if (!suggestion?.place_id || !placesServiceRef.current) return
-
-    placesServiceRef.current.getDetails(
-      {
-        placeId: suggestion.place_id,
-        fields: ["geometry", "formatted_address", "name"],
-      },
-      (place, status) => {
-        if (status === window.google?.maps?.places?.PlacesServiceStatus?.OK && place?.geometry?.location) {
-          const lat = place.geometry.location.lat()
-          const lng = place.geometry.location.lng()
-          const address = place.formatted_address || place.name || ""
-          handleLocationSelect(lat, lng, address, false)
-          setSearchSuggestions([])
-          setShowSuggestions(false)
-        }
-      }
-    )
-  }
+  // Native Autocomplete is handled directly by google.maps.places.Autocomplete bound to the input
 
   // Method 2 - Browser Current Location Geolocation
   const handleUseCurrentLocation = () => {
@@ -561,40 +508,9 @@ export default function AddZone() {
                     type="text"
                     placeholder="Search address or area..."
                     value={locationSearch}
-                    onChange={(e) => handleLocationSearchChange(e.target.value)}
-                    onFocus={() => {
-                      if (searchSuggestions.length > 0) setShowSuggestions(true)
-                    }}
-                    onBlur={() => {
-                      setTimeout(() => setShowSuggestions(false), 150)
-                    }}
+                    onChange={(e) => setLocationSearch(e.target.value)}
                     className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-xs text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                   />
-                  {showSuggestions && searchSuggestions.length > 0 && (
-                    <div className="absolute left-0 right-0 top-full mt-2 rounded-xl border border-slate-200 bg-white shadow-xl z-50 overflow-hidden max-h-60 overflow-y-auto">
-                      {searchSuggestions.map((suggestion) => (
-                        <button
-                          key={suggestion.place_id}
-                          type="button"
-                          onMouseDown={(e) => {
-                            e.preventDefault()
-                            handleSuggestionSelect(suggestion)
-                          }}
-                          className="w-full px-3 py-2 text-left hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0 flex items-start gap-2 text-xs"
-                        >
-                          <MapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
-                          <div className="truncate">
-                            <span className="block font-semibold text-slate-800 truncate">
-                              {suggestion.structured_formatting?.main_text || suggestion.description}
-                            </span>
-                            <span className="block text-[10px] text-slate-500 truncate">
-                              {suggestion.structured_formatting?.secondary_text || suggestion.description}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
 
                 {/* Geolocation trigger */}
