@@ -429,19 +429,25 @@ export default function AllZonesMap() {
             )}
 
             {!googleMapsApiKey && !mapLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-100 rounded-lg">
-                <div className="text-center p-6">
-                  <MapPin className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                  <p className="text-sm text-slate-600">Google Maps API key not found</p>
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-100/90 backdrop-blur-sm rounded-lg z-[10]">
+                <div className="text-center p-6 bg-white border border-slate-200 rounded-xl shadow-lg max-w-sm m-4">
+                  <MapPin className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                  <p className="text-sm font-semibold text-slate-800 mb-2">Google Maps API Key Not Found</p>
+                  <p className="text-xs text-slate-500">Please configure your Google Maps API key in the environment file to render the map.</p>
                 </div>
               </div>
             )}
 
             {!loading && !mapLoading && zones.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-100 rounded-lg">
-                <div className="text-center p-6">
-                  <MapPin className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                  <p className="text-sm text-slate-600">No zones found</p>
+              <div className="absolute top-4 left-4 z-[10] bg-white/95 backdrop-blur border border-slate-200 rounded-xl p-4 shadow-lg max-w-xs flex gap-3 items-start">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="w-5 h-5 text-amber-500" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-800">No Zones Created</h4>
+                  <p className="text-[10px] text-slate-600 mt-1 leading-relaxed">
+                    There are no restaurant zones configured in the database. Please create a zone first in the Zone Setup tab.
+                  </p>
                 </div>
               </div>
             )}
