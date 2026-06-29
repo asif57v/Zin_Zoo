@@ -1,8 +1,7 @@
-import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Suspense, lazy, useEffect } from 'react'
 import { AppShellSkeleton } from '@food/components/ui/loading-skeletons'
-import LandingPage from './LandingPage'
-import { adminAPI } from '@/services/api'
+import { isModuleAuthenticated } from '@food/utils/auth'
 
 const NATIVE_LAST_ROUTE_KEY = 'native_last_route'
 
@@ -11,16 +10,10 @@ const FoodApp = lazy(() => import('../modules/Food/routes'))
 const AuthApp = lazy(() => import('../modules/auth/routes'))
 import ProtectedRoute from '@food/components/ProtectedRoute'
 
+// Test comment to trigger Antigravity UI popup
 const PageLoader = () => <AppShellSkeleton />
 
-/**
- * FoodAppWrapper — Quick-spicy App. को /food prefix के साथ render करता है.
- * 
- * Quick-spicy की App.jsx में routes /restaurant, /usermain, /admin, /delivery
- * जैसे hain (bina /food prefix ke). Yahan hum useLocation se /food ke baad wala
- * path nikalne ke baad FoodApp render karte hain. FoodApp internally BrowserRouter
- * nahi use karta (sirf Routes use karta hai), isliye ye directly kaam karta hai.
- */
+
 const FoodAppWrapper = () => {
   return (
     <Suspense fallback={<PageLoader />}>
@@ -37,48 +30,12 @@ const RedirectToFood = () => {
   return <Navigate to={`/food${location.pathname}${location.search}`} replace />;
 };
 
-const parseFeatureEnabled = (value, fallback = true) => {
-  if (typeof value === 'boolean') return value
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase()
-    if (normalized === 'true') return true
-    if (normalized === 'false') return false
+const RootRedirect = () => {
+  if (isModuleAuthenticated('user')) {
+    return <Navigate to="/food/user" replace />
   }
-  if (typeof value === 'number') {
-    if (value === 1) return true
-    if (value === 0) return false
-  }
-  return fallback
+  return <Navigate to="/food/user/auth/login" replace />
 }
-
-const RootEntryRoute = () => {
-  const [loading, setLoading] = useState(true)
-  const [showLandingAtRoot, setShowLandingAtRoot] = useState(true)
-
-  useEffect(() => {
-    const loadFeatureSettings = async () => {
-      try {
-        const res = await adminAPI.getPublicFeatureSettings()
-        const rows = Array.isArray(res?.data?.data) ? res.data.data : []
-        const feature = rows.find((row) => row.key === 'root_landing_and_unregistered_control')
-        if (feature) {
-          setShowLandingAtRoot(parseFeatureEnabled(feature.isEnabled, true))
-        }
-      } catch (_error) {
-        // fallback to landing page when API is unavailable
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadFeatureSettings()
-  }, [])
-
-  if (loading) return <PageLoader />
-  if (!showLandingAtRoot) return <Navigate to="/food/user" replace />
-  return <LandingPage />
-}
-
-
 const AdminRouter = lazy(() => import('../modules/Food/components/admin/AdminRouter'))
 
 const AppRoutes = () => {
@@ -106,20 +63,13 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      {/* Root → Master Landing Page */}
-      <Route path="/" element={<RootEntryRoute />} />
-
-      {/* Auth Module */}
-
+      {/* Root → Redirect to login or home */}
+      <Route path="/" element={<RootRedirect />} />
 
       {/* Food Module */}
       <Route path="/food/*" element={<FoodAppWrapper />} />
 
-      {/* Global Admin Portal - AdminRouter handles its own protection for sub-routes */}
-      <Route path="/admin/*" element={<AdminRouter />} />
-
-      {/* NEW Delivery V2 (Parallel testing) */}
-      {/* Global Admin Portal - wrap lazy router in Suspense to avoid blank/crash on direct admin URLs */}
+      {/* Admin Portal */}
       <Route
         path="/admin/*"
         element={

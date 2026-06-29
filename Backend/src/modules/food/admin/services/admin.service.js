@@ -37,6 +37,8 @@ const FoodDeliveryWallet = mongoose.models.FoodDeliveryWallet || mongoose.model(
 const FoodDeliveryCashDeposit = mongoose.models.FoodDeliveryCashDeposit || mongoose.model('FoodDeliveryCashDeposit', new mongoose.Schema({}, { strict: false, collection: 'food_delivery_cash_deposits' }));
 const FoodUnregisteredRestaurant = mongoose.models.FoodUnregisteredRestaurant || mongoose.model('FoodUnregisteredRestaurant', new mongoose.Schema({}, { strict: false, collection: 'food_unregistered_restaurants' }));
 import { FoodAdmin } from '../../../../core/admin/admin.model.js';
+import { GroceryOrder } from '../../orders/models/groceryOrder.model.js';
+import { ServiceBooking } from '../../../../modules/services/models/serviceBooking.model.js';
 const getAdminRestaurantSubscriptionHistoryFromRestaurant = async () => [];
 import { ADMIN_FULL_PERMISSIONS, isValidPermissionPayload, sanitizeAdminPermissions } from '../../../../constants/permissions.js';
 import {
@@ -397,12 +399,7 @@ export async function getDashboardStats(query = {}) {
         ? new mongoose.Types.ObjectId(query.zoneId)
         : null;
 
-    const orderMatch = {
-        $or: [
-            { "payment.method": { $in: ["cash", "wallet"] } },
-            { "payment.status": { $in: ["paid", "authorized", "captured", "settled", "refunded"] } },
-        ],
-    };
+    const orderMatch = {};
     if (periodRange) {
         orderMatch.createdAt = { $gte: periodRange.start, $lte: periodRange.end };
     }
@@ -410,17 +407,19 @@ export async function getDashboardStats(query = {}) {
         orderMatch.zoneId = zoneId;
     }
 
-    const restaurantMatch = {};
-    if (zoneId) {
-        restaurantMatch.zoneId = zoneId;
-    }
+    // const restaurantMatch = {};
+    // if (zoneId) {
+    //     restaurantMatch.zoneId = zoneId;
+    // }
 
-    const zoneRestaurantIds = zoneId
-        ? await FoodRestaurant.find({ zoneId }).distinct('_id')
-        : null;
-    const zoneScopedRestaurantMatch = zoneId
-        ? { restaurantId: { $in: zoneRestaurantIds || [] } }
-        : {};
+    // const zoneRestaurantIds = zoneId
+    //     ? await FoodRestaurant.find({ zoneId }).distinct('_id')
+    //     : null;
+    // const zoneScopedRestaurantMatch = zoneId
+    //     ? { restaurantId: { $in: zoneRestaurantIds || [] } }
+    //     : {};
+        
+    const zoneScopedFoodMatch = zoneId ? { zoneId } : {};
 
     const [
         orderTotalsAgg,
@@ -437,7 +436,9 @@ export async function getDashboardStats(query = {}) {
         recentPendingOrders,
         recentDeliveredOrders,
         recentCancelledOrders,
-        recentCustomers
+        recentCustomers,
+        groceryPending,
+        groceryCompleted
     ] = await Promise.all([
         FoodOrder.aggregate([
             { $match: orderMatch },
@@ -528,7 +529,7 @@ export async function getDashboardStats(query = {}) {
         FoodRestaurant.countDocuments({ ...restaurantMatch, status: 'pending' }),
         FoodDeliveryPartner.countDocuments({ status: 'approved' }),
         FoodDeliveryPartner.countDocuments({ status: 'pending' }),
-        FoodItem.countDocuments({ approvalStatus: 'approved', ...zoneScopedRestaurantMatch }),
+        FoodItem.countDocuments({ ...zoneScopedFoodMatch }),
         FoodAddon.countDocuments({ approvalStatus: 'approved', isDeleted: { $ne: true }, ...zoneScopedRestaurantMatch }),
         zoneId
             ? FoodOrder.distinct('userId', { ...orderMatch, userId: { $ne: null } }).then((ids) => ids.length)
@@ -573,7 +574,15 @@ export async function getDashboardStats(query = {}) {
                     }
                 }
             ])
-            : FoodUser.find({}).sort({ createdAt: -1 }).limit(5).select('name createdAt').lean()
+            : FoodUser.find({}).sort({ createdAt: -1 }).limit(5).select('name createdAt').lean(),
+        GroceryOrder.countDocuments({
+            ...orderMatch,
+            orderStatus: { $in: PENDING_ORDER_STATUSES }
+        }),
+        GroceryOrder.countDocuments({
+            ...orderMatch,
+            orderStatus: 'delivered'
+        })
     ]);
 
     const liveSignals = [];
@@ -695,8 +704,8 @@ export async function getDashboardStats(query = {}) {
         addons: { total: Number(addonsTotal || 0) },
         customers: { total: Number(customersTotal || 0) },
         orderStats: {
-            pending: Number(totals.pending || 0),
-            completed: Number(totals.delivered || 0)
+            pending: Number(totals.pending || 0) + Number(groceryPending || 0),
+            completed: Number(totals.delivered || 0) + Number(groceryCompleted || 0)
         },
         monthlyData,
         liveSignals: finalLiveSignals
@@ -3248,22 +3257,9 @@ const getAdminFoodUpdatedPricing = (existing = {}, body = {}) => {
 };
 
 export async function createFood(body) {
-    const restaurantId = body.restaurantId;
-    if (!restaurantId || !mongoose.Types.ObjectId.isValid(restaurantId)) {
-        throw new ValidationError('Valid restaurantId is required');
-    }
-    const restaurant = await FoodRestaurant.findById(restaurantId)
-        .select('pureVegRestaurant')
-        .lean();
-    if (!restaurant?._id) {
-        throw new ValidationError('Restaurant not found');
-    }
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     if (!name) throw new ValidationError('Food name is required');
     const foodType = body.foodType === 'Veg' ? 'Veg' : 'Non-Veg';
-    if (restaurant.pureVegRestaurant === true && foodType !== 'Veg') {
-        throw new ValidationError('Pure veg restaurants can only use veg foods');
-    }
     const { price, variants } = getAdminFoodCreatePricing(body);
 
     let categoryName = typeof body.categoryName === 'string' ? body.categoryName.trim() : '';
@@ -3297,18 +3293,9 @@ export async function updateFood(id, body) {
     if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
     const doc = await FoodItem.findById(id);
     if (!doc) return null;
-    const restaurant = await FoodRestaurant.findById(doc.restaurantId)
-        .select('pureVegRestaurant')
-        .lean();
-    if (!restaurant?._id) {
-        throw new ValidationError('Restaurant not found');
-    }
     if (body.name !== undefined) doc.name = String(body.name || '').trim();
     if (body.description !== undefined) doc.description = String(body.description || '').trim();
     const targetFoodType = body.foodType !== undefined ? (body.foodType === 'Veg' ? 'Veg' : 'Non-Veg') : (doc.foodType === 'Veg' ? 'Veg' : 'Non-Veg');
-    if (restaurant.pureVegRestaurant === true && targetFoodType !== 'Veg') {
-        throw new ValidationError('Pure veg restaurants can only use veg foods');
-    }
     const pricingUpdate = getAdminFoodUpdatedPricing(doc.toObject(), body);
     if (pricingUpdate.price !== undefined) doc.price = pricingUpdate.price;
     if (pricingUpdate.variants !== undefined) doc.variants = pricingUpdate.variants;

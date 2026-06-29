@@ -25,17 +25,12 @@ const debugError = (...args) => {}
 // Status configuration with titles, colors, and icons
 const statusConfig = {
   "all": { title: "All Orders", color: "emerald", icon: FileText },
-  "scheduled": { title: "Scheduled Orders", color: "blue", icon: Calendar },
   "pending": { title: "Pending Orders", color: "amber", icon: Package },
   "accepted": { title: "Accepted Orders", color: "green", icon: Package },
   "processing": { title: "Processing Orders", color: "orange", icon: Package },
-  "food-on-the-way": { title: "Food On The Way Orders", color: "amber", icon: Package },
+  "out-for-delivery": { title: "Out For Delivery", color: "blue", icon: Package },
   "delivered": { title: "Delivered Orders", color: "emerald", icon: Package },
   "canceled": { title: "Canceled Orders", color: "rose", icon: Package },
-  "restaurant-cancelled": { title: "Restaurant Cancelled Orders", color: "red", icon: Package },
-  "payment-failed": { title: "Payment Failed Orders", color: "red", icon: Package },
-  "refunded": { title: "Refunded Orders", color: "sky", icon: Package },
-  "offline-payments": { title: "Offline Payments", color: "slate", icon: Package },
 }
 
 export default function OrdersPage({ statusKey = "all" }) {
@@ -470,19 +465,17 @@ export default function OrdersPage({ statusKey = "all" }) {
       }
 
       let displayStatus = order.orderStatus
-      if (!backendStatus || backendStatus === "created" || backendStatus === "confirmed") {
+      if (!backendStatus || backendStatus === "created" || backendStatus === "pending_payment") {
         displayStatus = "Pending"
-      } else if (backendStatus === "preparing" || backendStatus === "ready_for_pickup") {
+      } else if (backendStatus === "confirmed") {
+        displayStatus = "Accepted"
+      } else if (backendStatus === "preparing") {
         displayStatus = "Processing"
       } else if (backendStatus === "picked_up") {
-        displayStatus = "Food On The Way"
+        displayStatus = "Out For Delivery"
       } else if (backendStatus === "delivered") {
         displayStatus = "Delivered"
-      } else if (backendStatus === "cancelled_by_restaurant") {
-        displayStatus = "Cancelled by Restaurant"
-      } else if (backendStatus === "cancelled_by_user") {
-        displayStatus = "Cancelled by User"
-      } else if (backendStatus === "cancelled_by_admin") {
+      } else if (backendStatus.includes("cancel")) {
         displayStatus = "Canceled"
       }
 
@@ -703,6 +696,30 @@ export default function OrdersPage({ statusKey = "all" }) {
     } catch (error) {
       debugError("Error accepting order:", error)
       toast.error(error.response?.data?.message || "Failed to accept order")
+    } finally {
+      setProcessingActionOrderId(null)
+    }
+  }
+
+  const handleUpdateStatus = async (order, status) => {
+    const orderIdToUse = order.id || order._id || order.orderId
+    if (!orderIdToUse) {
+      toast.error("Order ID not found")
+      return
+    }
+
+    try {
+      setProcessingActionOrderId(order.id || order.orderId)
+      const response = await adminAPI.updateOrderStatus(orderIdToUse, { orderStatus: status })
+      if (response.data?.success || response.status === 200) {
+        toast.success(`Order status updated`)
+        await fetchOrders({ silent: true, withRingCheck: false })
+      } else {
+        toast.error(response.data?.message || "Failed to update order status")
+      }
+    } catch (error) {
+      debugError("Error updating order status:", error)
+      toast.error(error.response?.data?.message || "Failed to update order status")
     } finally {
       setProcessingActionOrderId(null)
     }
@@ -1037,15 +1054,11 @@ export default function OrdersPage({ statusKey = "all" }) {
           orderDate: "Order Date",
           orderOtp: "Order OTP",
           customer: "Customer Information",
-          restaurant: "Restaurant",
           foodItems: "Food Items",
           totalAmount: "Total Amount",
           paymentType: "Payment Type",
           paymentCollectionStatus: "Payment Status",
           orderStatus: "Order Status",
-          ...(statusKey === "all"
-            ? { deliveryPartner: "Assigned Delivery Partner" }
-            : {}),
           actions: "Actions",
         }}
       />
@@ -1067,20 +1080,13 @@ export default function OrdersPage({ statusKey = "all" }) {
         onViewOrder={handleViewOrder}
         onPrintOrder={handlePrintOrder}
         onRefund={handleRefund}
-        onDeleteOrder={statusKey === "all" ? handleDeleteOrder : undefined}
-        onAcceptOrder={statusKey === "all" || statusKey === "pending" ? handleAcceptOrder : undefined}
-        onRejectOrder={statusKey === "all" || statusKey === "pending" ? handleRejectOrder : undefined}
+        onDeleteOrder={handleDeleteOrder}
+        onAcceptOrder={handleAcceptOrder}
+        onUpdateStatus={handleUpdateStatus}
+        onRejectOrder={handleRejectOrder}
         onDeassignAndResend={handleDeassignAndResend}
         onResendNotification={handleResendNotification}
-        onCancelOrder={
-          statusKey === "all" ||
-          statusKey === "pending" ||
-          statusKey === "accepted" ||
-          statusKey === "processing" ||
-          statusKey === "food-on-the-way"
-            ? handleCancelOrder
-            : undefined
-        }
+        onCancelOrder={handleCancelOrder}
         actionLoadingOrderId={processingActionOrderId}
         deletingOrderId={deletingOrderId}
         showAssignedDeliveryPartner={statusKey === "all"}

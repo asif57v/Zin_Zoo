@@ -4,9 +4,9 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
-const adminEmail = 'admin@gmail.com';
-const adminPassword = 'admin@123';
-const adminName = 'Super Admin';
+const adminEmail = 'zinzoo@gmail.com';
+const adminPassword = 'zinzoo123';
+const adminName = 'Zin Zoo Admin';
 
 async function seedAdmin() {
   if (!mongoUri) {

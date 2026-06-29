@@ -1,20 +1,22 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Search, Download, ChevronDown, Edit, Trash2, Calendar, RefreshCw } from "lucide-react"
-import { emptyCashbacks } from "@food/utils/adminFallbackData"
+import { adminAPI } from "@food/api"
+import { toast } from "sonner"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
-
 
 export default function Cashback() {
   const [activeLanguage, setActiveLanguage] = useState("default")
   const [searchQuery, setSearchQuery] = useState("")
   const [cashbackType, setCashbackType] = useState("all")
-  const [cashbacks, setCashbacks] = useState(emptyCashbacks)
+  const [cashbacks, setCashbacks] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [editId, setEditId] = useState(null)
   const [formData, setFormData] = useState({
-    title: "Eid Dhamaka",
+    title: "",
     customer: "",
-    cashbackType: "Percentage (%)",
+    cashbackType: "Percentage",
     cashbackAmount: "",
     minPurchase: "",
     maxDiscount: "",
@@ -23,12 +25,30 @@ export default function Cashback() {
     limitForSameUser: "",
   })
 
+  useEffect(() => {
+    fetchCashbacks()
+  }, [])
+
+  const fetchCashbacks = async () => {
+    try {
+      setLoading(true)
+      const response = await adminAPI.getCashbacks()
+      if (response?.data?.success) {
+        setCashbacks(response.data.data || [])
+      }
+    } catch (error) {
+      toast.error("Failed to load cashbacks")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const languageTabs = [
     { key: "default", label: "Default" },
     { key: "en", label: "English(EN)" },
-    { key: "bn", label: "Bengali - বাংলা (BN)" },
-    { key: "ar", label: "Arabic - العربية (AR)" },
-    { key: "es", label: "Spanish - espa�ol(ES)" },
+    { key: "bn", label: "Bengali - à¦¬à¦¾à¦‚à¦²à¦¾ (BN)" },
+    { key: "ar", label: "Arabic - Ø§Ù„Ø¹Ø±Ø¨ÙŠØ© (AR)" },
+    { key: "es", label: "Spanish - español(ES)" },
   ]
 
   const filteredCashbacks = useMemo(() => {
@@ -45,7 +65,7 @@ export default function Cashback() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
       result = result.filter(cb =>
-        cb.name.toLowerCase().includes(query)
+        cb.title?.toLowerCase().includes(query)
       )
     }
 
@@ -56,17 +76,37 @@ export default function Cashback() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    debugLog("Form submitted:", formData)
-    alert("Cashback offer created successfully!")
+    if (!formData.title) return toast.error("Title is required")
+    
+    try {
+      if (editId) {
+        const response = await adminAPI.updateCashback(editId, formData)
+        if (response?.data?.success) {
+          toast.success("Cashback updated")
+          handleReset()
+          fetchCashbacks()
+        }
+      } else {
+        const response = await adminAPI.createCashback(formData)
+        if (response?.data?.success) {
+          toast.success("Cashback created")
+          handleReset()
+          fetchCashbacks()
+        }
+      }
+    } catch (error) {
+      toast.error("Failed to save cashback")
+    }
   }
 
   const handleReset = () => {
+    setEditId(null)
     setFormData({
-      title: "Eid Dhamaka",
+      title: "",
       customer: "",
-      cashbackType: "Percentage (%)",
+      cashbackType: "Percentage",
       cashbackAmount: "",
       minPurchase: "",
       maxDiscount: "",
@@ -76,15 +116,45 @@ export default function Cashback() {
     })
   }
 
-  const handleToggleStatus = (sl) => {
-    setCashbacks(cashbacks.map(cb =>
-      cb.sl === sl ? { ...cb, status: !cb.status } : cb
-    ))
+  const handleEdit = (cb) => {
+    setEditId(cb._id)
+    setFormData({
+      title: cb.title || "",
+      customer: cb.customer || "",
+      cashbackType: cb.cashbackType || "Percentage",
+      cashbackAmount: cb.cashbackAmount || "",
+      minPurchase: cb.minPurchase || "",
+      maxDiscount: cb.maxDiscount || "",
+      startDate: cb.startDate || "",
+      endDate: cb.endDate || "",
+      limitForSameUser: cb.limitForSameUser || "",
+    })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleDelete = (sl) => {
+  const handleToggleStatus = async (id) => {
+    try {
+      const response = await adminAPI.toggleCashbackStatus(id)
+      if (response?.data?.success) {
+        toast.success("Status updated")
+        fetchCashbacks()
+      }
+    } catch (error) {
+      toast.error("Failed to update status")
+    }
+  }
+
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this cashback offer?")) {
-      setCashbacks(cashbacks.filter(cb => cb.sl !== sl))
+      try {
+        const response = await adminAPI.deleteCashback(id)
+        if (response?.data?.success) {
+          toast.success("Cashback deleted")
+          fetchCashbacks()
+        }
+      } catch (error) {
+        toast.error("Failed to delete cashback")
+      }
     }
   }
 
@@ -97,7 +167,7 @@ export default function Cashback() {
             <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center">
               <RefreshCw className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">Create Cashback Offer</h1>
+            <h1 className="text-2xl font-bold text-slate-900">{editId ? 'Edit' : 'Create'} Cashback Offer</h1>
           </div>
 
           {/* Language Tabs */}
@@ -148,19 +218,19 @@ export default function Cashback() {
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Cashback Type <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={formData.cashbackType}
-                  onChange={(e) => handleInputChange("cashbackType", e.target.value)}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-                  <option value="Percentage (%)">Percentage (%)</option>
-                  <option value="Amount ($)">Amount ($)</option>
-                </select>
+                  <select
+                    value={formData.cashbackType}
+                    onChange={(e) => handleInputChange("cashbackType", e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                  >
+                    <option value="Percentage">Percentage (%)</option>
+                    <option value="Amount">Amount ($)</option>
+                  </select>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Cashback Amount ({formData.cashbackType === "Percentage (%)" ? "%" : "$"}) <span className="text-red-500">*</span>
+                  Cashback Amount ({formData.cashbackType === "Percentage" ? "%" : "$"}) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -206,7 +276,7 @@ export default function Cashback() {
                     type="date"
                     value={formData.startDate}
                     onChange={(e) => handleInputChange("startDate", e.target.value)}
-                    className="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="w-full px-4 py-2 pr-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none appearance-none"
                   />
                   <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 </div>
@@ -221,7 +291,7 @@ export default function Cashback() {
                     type="date"
                     value={formData.endDate}
                     onChange={(e) => handleInputChange("endDate", e.target.value)}
-                    className="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    className="w-full px-4 py-2 pr-10 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none appearance-none"
                   />
                   <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 </div>
@@ -251,9 +321,9 @@ export default function Cashback() {
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-md"
+                className="px-6 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
               >
-                Submit
+                {editId ? 'Update' : 'Submit'}
               </button>
             </div>
           </form>
@@ -309,59 +379,76 @@ export default function Cashback() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-slate-100">
-                {filteredCashbacks.map((cashback) => (
-                  <tr key={cashback.sl} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-slate-700">{cashback.sl}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-medium text-slate-900">{cashback.name}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-slate-700">{cashback.cashbackType}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-slate-900">{cashback.amount}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-slate-700">{cashback.duration}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-slate-700">{cashback.totalUsed}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() => handleToggleStatus(cashback.sl)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                          cashback.status ? "bg-blue-600" : "bg-slate-300"
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            cashback.status ? "translate-x-6" : "translate-x-1"
-                          }`}
-                        />
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          className="p-1.5 rounded text-blue-600 hover:bg-blue-50 transition-colors"
-                          title="Edit"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(cashback.sl)}
-                          className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                {loading ? (
+                  <tr>
+                    <td colSpan="8" className="px-6 py-8 text-center text-slate-500">Loading...</td>
+                  </tr>
+                ) : filteredCashbacks.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="px-6 py-8 text-center text-slate-500">
+                      No cashback offers found
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredCashbacks.map((cb, index) => (
+                    <tr key={cb._id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm font-medium text-slate-700">{index + 1}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-medium text-slate-900">
+                          {cb.title}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-slate-700">{cb.cashbackType}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm font-medium text-slate-900">
+                          {cb.cashbackType === "Percentage" ? `${cb.cashbackAmount}%` : `$${cb.cashbackAmount}`}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-slate-700">{cb.startDate} - {cb.endDate}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-slate-700">{cb.limitForSameUser}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleToggleStatus(cb._id)}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                            cb.status ? "bg-blue-600" : "bg-slate-300"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              cb.status ? "translate-x-6" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleEdit(cb)}
+                            className="p-1.5 rounded text-blue-600 hover:bg-blue-50 transition-colors"
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(cb._id)}
+                            className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

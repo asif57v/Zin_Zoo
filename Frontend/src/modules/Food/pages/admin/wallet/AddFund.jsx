@@ -1,25 +1,64 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Wallet, Settings } from "lucide-react"
+import { toast } from "sonner"
+import { adminAPI } from "@food/api"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
 
 
 export default function AddFund() {
+  const [loading, setLoading] = useState(false)
+  const [customers, setCustomers] = useState([])
   const [formData, setFormData] = useState({
     customer: "",
     amount: "",
     reference: "",
   })
 
+  useEffect(() => {
+    fetchCustomers()
+  }, [])
+
+  const fetchCustomers = async () => {
+    try {
+      // Fetch customers for the dropdown
+      const response = await adminAPI.getCustomers({ limit: 1000 })
+      if (response?.data?.success) {
+        setCustomers(response.data.data?.users || [])
+      }
+    } catch (error) {
+      debugError("Error fetching customers:", error)
+      toast.error("Failed to fetch customers")
+    }
+  }
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    debugLog("Form submitted:", formData)
-    alert("Fund added successfully!")
+    if (!formData.customer) return toast.error("Please select a customer")
+    if (!formData.amount || formData.amount <= 0) return toast.error("Please enter a valid amount")
+    
+    try {
+      setLoading(true)
+      const response = await adminAPI.addFundToCustomer({
+        customer: formData.customer,
+        amount: Number(formData.amount),
+        reference: formData.reference
+      })
+      if (response?.data?.success) {
+        toast.success("Fund added successfully!")
+        handleReset()
+      }
+    } catch (error) {
+      debugError("Error adding fund:", error)
+      toast.error(error.response?.data?.message || "Failed to add fund")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleReset = () => {
@@ -59,8 +98,9 @@ export default function AddFund() {
                   className="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
                   <option value="">Select Customer</option>
-                  <option value="jane-doe">Jane Doe</option>
-                  <option value="john-doe">John Doe</option>
+                  {customers.map(c => (
+                    <option key={c._id || c.id} value={c._id || c.id}>{c.f_name} {c.l_name} ({c.phone})</option>
+                  ))}
                 </select>
               </div>
 
@@ -100,9 +140,10 @@ export default function AddFund() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-md"
+                  disabled={loading}
+                  className="px-6 py-2.5 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-md disabled:opacity-50"
                 >
-                  Submit
+                  {loading ? 'Submitting...' : 'Submit'}
                 </button>
               </div>
             </div>

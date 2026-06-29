@@ -51,23 +51,6 @@ export default function BottomNavigation() {
           </span>
         </Link>
 
-        {/* Cart Tab */}
-        <Link
-          to="/food/user/cart"
-          className={`flex flex-1 flex-col items-center justify-center gap-1 px-1 py-1.5 transition-all duration-300 relative rounded-full ${isCart
-              ? ""
-              : "text-gray-500 dark:text-gray-400 hover:bg-gray-100/50 dark:hover:bg-gray-800/50"
-            }`}
-          style={isCart ? { color: activeColor, backgroundColor: activeBg } : undefined}
-        >
-          <div className="relative">
-            <ShoppingCart className={`h-5 w-5 transition-transform duration-300 ${isCart ? "scale-110" : "text-gray-500 dark:text-gray-400"}`} strokeWidth={isCart ? 2.5 : 2} style={isCart ? { color: activeColor } : undefined} />
-          </div>
-          <span className={`text-[10px] sm:text-xs font-semibold tracking-wide transition-all ${isCart ? "" : "text-gray-500 dark:text-gray-400 opacity-80"}`}>
-            Cart
-          </span>
-        </Link>
-
         {/* Under 250 Tab */}
         <Link
           to="/food/user/under-250"
@@ -99,6 +82,23 @@ export default function BottomNavigation() {
           </div>
           <span className={`text-[10px] sm:text-xs font-semibold tracking-wide transition-all ${isServices ? "" : "text-gray-500 dark:text-gray-400 opacity-80"}`}>
             Services
+          </span>
+        </Link>
+
+        {/* Cart Tab */}
+        <Link
+          to="/food/user/cart"
+          className={`flex flex-1 flex-col items-center justify-center gap-1 px-1 py-1.5 transition-all duration-300 relative rounded-full ${isCart
+              ? ""
+              : "text-gray-500 dark:text-gray-400 hover:bg-gray-100/50 dark:hover:bg-gray-800/50"
+            }`}
+          style={isCart ? { color: activeColor, backgroundColor: activeBg } : undefined}
+        >
+          <div className="relative">
+            <ShoppingCart className={`h-5 w-5 transition-transform duration-300 ${isCart ? "scale-110" : "text-gray-500 dark:text-gray-400"}`} strokeWidth={isCart ? 2.5 : 2} style={isCart ? { color: activeColor } : undefined} />
+          </div>
+          <span className={`text-[10px] sm:text-xs font-semibold tracking-wide transition-all ${isCart ? "" : "text-gray-500 dark:text-gray-400 opacity-80"}`}>
+            Cart
           </span>
         </Link>
 

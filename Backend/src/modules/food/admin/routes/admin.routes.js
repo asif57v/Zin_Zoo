@@ -9,8 +9,12 @@ import * as feedbackExperienceController from '../controllers/feedbackExperience
 import * as notificationBroadcastController from '../controllers/notificationBroadcast.controller.js';
 import * as orderController from '../../orders/controllers/order.controller.js';
 import { getAdminPageController, upsertAdminPageController } from '../controllers/pageContent.controller.js';
+import * as adminWalletController from '../controllers/adminWallet.controller.js';
 import { FoodAdmin } from '../../../../core/admin/admin.model.js';
 import { requireAdminPermission, requireAnyAdminPermission } from '../../../../core/roles/adminPermission.middleware.js';
+import * as adminPromotionsController from '../controllers/adminPromotions.controller.js';
+import * as adminGroceryController from '../controllers/adminGrocery.controller.js';
+import * as adminGlobalOrdersController from '../controllers/adminGlobalOrders.controller.js';
 
 const router = express.Router();
 
@@ -96,6 +100,7 @@ router.use('/coin-settings', requireAdminPermission('system_settings', 'view'));
 router.use('/coin-requests', requireAdminPermission('system_settings', 'view'));
 router.use('/notifications', requireAdminPermission('system_settings', 'view'));
 router.use('/pages-social-media', requireAdminPermission('pages_social_media', 'view'));
+router.use('/wallet', requireAdminPermission('system_settings', 'view')); // Using system_settings or maybe we should add transaction_management
 router.use('/sidebar-badges', requireAdminPermission('dashboard', 'view'));
 
 router.post('/sub-admins', requireAdminPermission('sub_admin_management', 'create'), adminController.createSubAdmin);
@@ -139,6 +144,46 @@ router.get('/dashboard-stats', adminController.getDashboardStats);
 router.get('/reports/transactions', adminController.getTransactionReport);
 router.get('/feature-settings', adminController.getFeatureSettings);
 router.patch('/feature-settings/:key', adminController.updateFeatureSetting);
+
+// ==========================
+// GROCERY MANAGEMENT
+// ==========================
+router.get('/grocery/categories', adminGroceryController.getGroceryCategories);
+router.post('/grocery/categories', adminGroceryController.createGroceryCategory);
+router.put('/grocery/categories/:id', adminGroceryController.updateGroceryCategory);
+router.delete('/grocery/categories/:id', adminGroceryController.deleteGroceryCategory);
+
+router.get('/grocery/products', adminGroceryController.getGroceryProducts);
+router.post('/grocery/products', adminGroceryController.createGroceryProduct);
+router.put('/grocery/products/:id', adminGroceryController.updateGroceryProduct);
+router.delete('/grocery/products/:id', adminGroceryController.deleteGroceryProduct);
+
+router.get('/grocery/orders', adminGroceryController.getGroceryOrders);
+router.post('/grocery/seed', adminGroceryController.seedGroceryData);
+
+// ==========================
+// PROMOTIONS & CAMPAIGNS
+// ==========================
+// Campaigns
+router.post('/campaigns', adminPromotionsController.createCampaign);
+router.get('/campaigns', adminPromotionsController.getCampaigns);
+router.put('/campaigns/:id', adminPromotionsController.updateCampaign);
+router.delete('/campaigns/:id', adminPromotionsController.deleteCampaign);
+router.patch('/campaigns/:id/status', adminPromotionsController.toggleCampaignStatus);
+
+// Cashback
+router.post('/cashbacks', adminPromotionsController.createCashback);
+router.get('/cashbacks', adminPromotionsController.getCashbacks);
+router.put('/cashbacks/:id', adminPromotionsController.updateCashback);
+router.delete('/cashbacks/:id', adminPromotionsController.deleteCashback);
+router.patch('/cashbacks/:id/status', adminPromotionsController.toggleCashbackStatus);
+
+// Advertisements
+router.post('/advertisements', adminPromotionsController.createAdvertisement);
+router.get('/advertisements', adminPromotionsController.getAdvertisements);
+router.put('/advertisements/:id', adminPromotionsController.updateAdvertisement);
+router.delete('/advertisements/:id', adminPromotionsController.deleteAdvertisement);
+router.patch('/advertisements/:id/status', adminPromotionsController.updateAdvertisementStatus);
 
 // ----- Categories -----
 router.get('/categories', adminController.getCategories);
@@ -220,6 +265,16 @@ router.post('/zones', adminController.createZone);
 router.patch('/zones/:id', adminController.updateZone);
 router.delete('/zones/:id', adminController.deleteZone);
 
+// ----- Global Orders -----
+router.get(
+    '/global-orders',
+    requireAnyAdminPermission([
+        { section: 'order_management', action: 'view' },
+        { section: 'dashboard', action: 'view' },
+    ]),
+    adminGlobalOrdersController.getGlobalOrders
+);
+
 // ----- Orders -----
 router.get(
     '/orders',
@@ -232,12 +287,26 @@ router.get(
 router.get('/orders/:orderId', orderController.getOrderByIdAdminController);
 router.patch('/orders/:orderId/accept', orderController.acceptOrderAdminController);
 router.patch('/orders/:orderId/reject', orderController.rejectOrderAdminController);
+router.put('/orders/:orderId/status', orderController.updateOrderStatusAdminController);
 router.post('/orders/:orderId/refund', orderController.processRefundAdminController);
 router.delete('/orders/:orderId', orderController.deleteOrderAdminController);
 
 // ----- CMS Pages (About + legal) -----
 router.get('/pages-social-media/:key', getAdminPageController);
 router.put('/pages-social-media/:key', upsertAdminPageController);
+
+// ----- Wallet & Transactions -----
+router.post('/wallet/add-fund', adminWalletController.addFundToCustomer);
+router.get('/wallet/bonuses', adminWalletController.getWalletBonuses);
+router.post('/wallet/bonuses', adminWalletController.createWalletBonus);
+router.patch('/wallet/bonuses/:id', adminWalletController.updateWalletBonus);
+router.delete('/wallet/bonuses/:id', adminWalletController.deleteWalletBonus);
+router.patch('/wallet/bonuses/:id/status', adminWalletController.toggleWalletBonusStatus);
+router.get('/wallet/withdraw-methods', adminWalletController.getWithdrawMethods);
+router.post('/wallet/withdraw-methods', adminWalletController.createWithdrawMethod);
+router.patch('/wallet/withdraw-methods/:id', adminWalletController.updateWithdrawMethod);
+router.delete('/wallet/withdraw-methods/:id', adminWalletController.deleteWithdrawMethod);
+router.patch('/wallet/withdraw-methods/:id/status', adminWalletController.toggleWithdrawMethodStatus);
 
 router.get('/sidebar-badges', adminController.getSidebarBadges);
 

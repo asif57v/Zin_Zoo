@@ -23,6 +23,12 @@ export const searchAPI = {
     apiClient.get("/food/search/categories/admin", { params }),
 };
 
+/** Services Public API */
+export const servicesPublicAPI = {
+  getCategories: () => apiClient.get("/services/public/categories"),
+  getServices: (params = {}) => apiClient.get("/services/public/list", { params }),
+};
+
 const createStubAPI = () =>
   new Proxy(
     {},
@@ -162,6 +168,21 @@ export const notificationAPI = {
     apiClient.delete(`/food/notifications/${String(id)}`, config),
   dismissAll: (config = {}) =>
     apiClient.delete("/food/notifications/inbox/all", config),
+};
+
+export const servicesUserAPI = {
+  createBooking: (body) =>
+    apiClient.post("/services/user/bookings", body, {
+      contextModule: "user",
+    }),
+  getUserBookings: () =>
+    apiClient.get("/services/user/bookings", {
+      contextModule: "user",
+    }),
+  cancelBooking: (id) =>
+    apiClient.put(`/services/user/bookings/${id}/cancel`, {}, {
+      contextModule: "user",
+    }),
 };
 
 /** Admin API - new backend only (GET /auth/me, PATCH /auth/admin/profile, POST /auth/admin/change-password) */
@@ -664,6 +685,10 @@ export const adminAPI = {
     apiClient.patch(`/food/admin/orders/${String(orderId)}/reject`, { reason }, {
       contextModule: "admin",
     }),
+  updateOrderStatus: (orderId, data) =>
+    apiClient.put(`/food/admin/orders/${String(orderId)}/status`, data, {
+      contextModule: "admin",
+    }),
   deassignAndResendOrder: (orderId) =>
     apiClient.patch(
       `/food/admin/orders/${String(orderId)}/deassign-resend`,
@@ -737,6 +762,10 @@ export const adminAPI = {
   /** Delete zone */
   deleteZone: (id) =>
     apiClient.delete(`/food/admin/zones/${id}`, { contextModule: "admin" }),
+
+  // Global Orders
+  getGlobalOrders: (params = {}) =>
+    apiClient.get("/food/admin/global-orders", { params, contextModule: "admin" }),
 
   /** Feedback Experience (admin) */
   getFeedbackExperiences: (params = {}) =>
@@ -2991,3 +3020,49 @@ export const diningAPI = {
 };
 export const heroBannerAPI = createStubAPI();
 export const publicAPI = createStubAPI();
+
+export const groceryAdminAPI = {
+  // Grocery Dashboard
+  getDashboardStats: (params) => apiClient.get("/grocery/admin/dashboard/stats", { params, contextModule: "admin" }),
+
+  // Grocery Categories
+  getCategories: (params) => apiClient.get("/grocery/admin/categories", { params, contextModule: "admin" }),
+  createCategory: (data) => apiClient.post("/grocery/admin/categories", data, { contextModule: "admin" }),
+  updateCategory: (id, data) => apiClient.put(`/grocery/admin/categories/${id}`, data, { contextModule: "admin" }),
+  deleteCategory: (id) => apiClient.delete(`/grocery/admin/categories/${id}`, { contextModule: "admin" }),
+
+  // Grocery Products
+  getProducts: (params) => apiClient.get("/grocery/admin/products", { params, contextModule: "admin" }),
+  createProduct: (data) => apiClient.post("/grocery/admin/products", data, { contextModule: "admin" }),
+  updateProduct: (id, data) => apiClient.put(`/grocery/admin/products/${id}`, data, { contextModule: "admin" }),
+  deleteProduct: (id) => apiClient.delete(`/grocery/admin/products/${id}`, { contextModule: "admin" }),
+
+  // Grocery Orders
+  getOrders: (params) => apiClient.get("/grocery/admin/orders", { params, contextModule: "admin" }),
+  getOrderById: (id) => apiClient.get(`/grocery/admin/orders/${id}`, { contextModule: "admin" }),
+  updateOrderStatus: (id, data) => apiClient.put(`/grocery/admin/orders/${id}/status`, data, { contextModule: "admin" }),
+  
+  seedGroceryData: () =>
+    apiClient.post("/grocery/admin/seed", {}, { contextModule: "admin" }),
+};
+
+export const servicesAdminAPI = {
+  getServices: (params) => apiClient.get("/services/admin/list", { params, contextModule: "admin" }),
+  addService: (data) => apiClient.post("/services/admin/add", data, { contextModule: "admin" }),
+  updateService: (id, data) => apiClient.put(`/services/admin/${id}`, data, { contextModule: "admin" }),
+  deleteService: (id) => apiClient.delete(`/services/admin/${id}`, { contextModule: "admin" }),
+
+  getCategories: (params) => apiClient.get("/services/admin/categories", { params, contextModule: "admin" }),
+  addCategory: (data) => apiClient.post("/services/admin/categories", data, { contextModule: "admin" }),
+  updateCategory: (id, data) => apiClient.put(`/services/admin/categories/${id}`, data, { contextModule: "admin" }),
+  deleteCategory: (id) => apiClient.delete(`/services/admin/categories/${id}`, { contextModule: "admin" }),
+
+  getBookings: (params) => apiClient.get("/services/admin/bookings", { params, contextModule: "admin" }),
+  updateBookingStatus: (id, status) => apiClient.patch(`/services/admin/bookings/${id}/status`, { status }, { contextModule: "admin" }),
+};
+
+export const groceryPublicAPI = {
+  getCategories: () => apiClient.get('/food/grocery/categories'),
+  getProducts: (params) => apiClient.get('/food/grocery/products', { params }),
+};
+

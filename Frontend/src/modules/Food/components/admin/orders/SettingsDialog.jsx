@@ -13,7 +13,6 @@ export default function SettingsDialog({ isOpen, onOpenChange, visibleColumns, t
     orderDate: "Order Date",
     orderOtp: "Order OTP",
     customer: "Customer Information",
-    restaurant: "Restaurant",
     foodItems: "Food Items",
     totalAmount: "Total Amount",
     paymentType: "Payment Type",
@@ -26,7 +25,7 @@ export default function SettingsDialog({ isOpen, onOpenChange, visibleColumns, t
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-white p-0 opacity-0 data-[state=open]:opacity-100 data-[state=closed]:opacity-0 transition-opacity duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:scale-100 data-[state=closed]:scale-100">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-white p-0 opacity-0 data-[state=open]:opacity-100 data-[state=closed]:opacity-0 transition-opacity duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:scale-100 data-[state=closed]:scale-100">
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle className="flex items-center gap-2">
             <Settings className="w-5 h-5" />

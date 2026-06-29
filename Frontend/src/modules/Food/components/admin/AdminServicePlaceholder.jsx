@@ -29,72 +29,16 @@ export default function AdminServicePlaceholder({ title }) {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
 
   // --- GROCERY MOCK DATA ---
-  const groceryCategories = useMemo(() => [
-    { id: 1, name: 'Fruits & Vegetables', image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=150', status: 'Active', itemsCount: 42 },
-    { id: 2, name: 'Dairy & Eggs', image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150', status: 'Active', itemsCount: 28 },
-    { id: 3, name: 'Bakery & Bread', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150', status: 'Active', itemsCount: 15 },
-    { id: 4, name: 'Meat & Seafood', image: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=150', status: 'Active', itemsCount: 22 },
-    { id: 5, name: 'Pantry Staples', image: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=150', status: 'Active', itemsCount: 56 },
-    { id: 6, name: 'Beverages', image: 'https://images.unsplash.com/photo-1527960659574-7801a6519f11?w=150', status: 'Active', itemsCount: 34 }
-  ], []);
-
-  const groceryProducts = useMemo(() => [
-    { id: 1, name: 'Organic Red Apples', category: 'Fruits & Vegetables', price: 120, stock: 45, image: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=150', status: 'Active', unit: '1 kg' },
-    { id: 2, name: 'Fresh Whole Milk', category: 'Dairy & Eggs', price: 65, stock: 12, image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150', status: 'Active', unit: '1 Litre' },
-    { id: 3, name: 'Whole Wheat Sourdough', category: 'Bakery & Bread', price: 90, stock: 8, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150', status: 'Active', unit: '400g' },
-    { id: 4, name: 'Farm Fresh Brown Eggs', category: 'Dairy & Eggs', price: 80, stock: 30, image: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?w=150', status: 'Active', unit: '12 pcs' },
-    { id: 5, name: 'Fresh Atlantic Salmon', category: 'Meat & Seafood', price: 850, stock: 5, image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=150', status: 'Active', unit: '500g' },
-    { id: 6, name: 'Premium Basmati Rice', category: 'Pantry Staples', price: 180, stock: 80, image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=150', status: 'Active', unit: '5 kg' },
-    { id: 7, name: 'Cold Pressed Olive Oil', category: 'Pantry Staples', price: 720, stock: 15, image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=150', status: 'Active', unit: '1 Litre' },
-    { id: 8, name: 'Organic Raw Honey', category: 'Pantry Staples', price: 350, stock: 0, image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=150', status: 'Inactive', unit: '500g' }
-  ], []);
-
-  const groceryOrders = useMemo(() => [
-    { id: 101, orderId: 'ORD-GRO-83921', customerName: 'Arjun Mehta', customerPhone: '+91 98765 43210', date: '2026-06-24', total: 450, paymentStatus: 'Paid', deliveryStatus: 'Pending', items: 'Organic Red Apples x2, Fresh Whole Milk x1' },
-    { id: 102, orderId: 'ORD-GRO-83922', customerName: 'Priya Sharma', customerPhone: '+91 87654 32109', date: '2026-06-24', total: 1120, paymentStatus: 'Paid', deliveryStatus: 'Delivered', items: 'Fresh Atlantic Salmon x1, Cold Pressed Olive Oil x1' },
-    { id: 103, orderId: 'ORD-GRO-83923', customerName: 'Rohan Gupta', customerPhone: '+91 76543 21098', date: '2026-06-23', total: 320, paymentStatus: 'Pending', deliveryStatus: 'Pending', items: 'Farm Fresh Brown Eggs x1, Whole Wheat Sourdough x2' },
-    { id: 104, orderId: 'ORD-GRO-83924', customerName: 'Ananya Iyer', customerPhone: '+91 65432 10987', date: '2026-06-23', total: 180, paymentStatus: 'Paid', deliveryStatus: 'Delivered', items: 'Premium Basmati Rice x1' },
-    { id: 105, orderId: 'ORD-GRO-83925', customerName: 'Vikram Singh', customerPhone: '+91 54321 09876', date: '2026-06-22', total: 690, paymentStatus: 'Failed', deliveryStatus: 'Canceled', items: 'Organic Raw Honey x1, Organic Red Apples x1' }
-  ], []);
+  const groceryCategories = useMemo(() => [], []);
+  const groceryProducts = useMemo(() => [], []);
+  const groceryOrders = useMemo(() => [], []);
 
   // --- SERVICE MOCK DATA ---
-  const serviceCategories = useMemo(() => [
-    { id: 1, name: 'Cleaning & Maid Services', image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=150', status: 'Active', providersCount: 18 },
-    { id: 2, name: 'Plumbing Services', image: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=150', status: 'Active', providersCount: 12 },
-    { id: 3, name: 'Electrical & AC Repair', image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=150', status: 'Active', providersCount: 15 },
-    { id: 4, name: 'Wellness & Spa at Home', image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=150', status: 'Active', providersCount: 8 },
-    { id: 5, name: 'Lawn & Gardening', image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=150', status: 'Active', providersCount: 10 }
-  ], []);
-
-  const servicesList = useMemo(() => [
-    { id: 1, name: 'Home Deep Cleaning', category: 'Cleaning & Maid Services', rate: 1499, provider: 'EcoClean Professionals', status: 'Active', rating: 4.8 },
-    { id: 2, name: 'Kitchen & Cabinet Deep Cleaning', category: 'Cleaning & Maid Services', rate: 899, provider: 'EcoClean Professionals', status: 'Active', rating: 4.6 },
-    { id: 3, name: 'AC Service & Filter Clean', category: 'Electrical & AC Repair', rate: 599, provider: 'FrostAir Engineers', status: 'Active', rating: 4.7 },
-    { id: 4, name: 'Toilet & Clog Unblocking', category: 'Plumbing Services', rate: 349, provider: 'QuickFix Plumbers', status: 'Active', rating: 4.5 },
-    { id: 5, name: 'Full Body Massage Therapy (60m)', category: 'Wellness & Spa at Home', rate: 1299, provider: 'Zen Touch Spa', status: 'Active', rating: 4.9 },
-    { id: 6, name: 'Home Switchboard Replacement', category: 'Electrical & AC Repair', rate: 299, provider: 'ShockSafe Electricians', status: 'Active', rating: 4.4 },
-    { id: 7, name: 'Garden Lawn Trimming & Mowing', category: 'Lawn & Gardening', rate: 799, provider: 'GreenScape Gardeners', status: 'Inactive', rating: 4.2 }
-  ], []);
-
-  const serviceAddonsList = useMemo(() => [
-    { id: 1, name: 'Eco-friendly Green Detergents', parentService: 'Home Deep Cleaning', price: 199, status: 'Active' },
-    { id: 2, name: 'Refrigerator Inner Cleaning Addon', parentService: 'Kitchen & Cabinet Deep Cleaning', price: 299, status: 'Active' },
-    { id: 3, name: 'Extra Bathroom Sanitization', parentService: 'Home Deep Cleaning', price: 249, status: 'Active' },
-    { id: 4, name: 'AC Gas Topup (Upto 50%)', parentService: 'AC Service & Filter Clean', price: 799, status: 'Active' }
-  ], []);
-
-  const serviceBookings = useMemo(() => [
-    { id: 201, bookingId: 'BKG-SRV-92101', customerName: 'Kabir Dev', customerPhone: '+91 99112 23344', date: '2026-06-24', time: '10:00 AM', serviceName: 'Home Deep Cleaning', total: 1499, status: 'Pending', provider: 'EcoClean Professionals' },
-    { id: 202, bookingId: 'BKG-SRV-92102', customerName: 'Meera Sen', customerPhone: '+91 88776 65544', date: '2026-06-24', time: '02:30 PM', serviceName: 'AC Service & Filter Clean', total: 599, status: 'Confirmed', provider: 'FrostAir Engineers' },
-    { id: 203, bookingId: 'BKG-SRV-92103', customerName: 'Amit Verma', customerPhone: '+91 77665 54433', date: '2026-06-25', time: '09:00 AM', serviceName: 'Toilet & Clog Unblocking', total: 349, status: 'Completed', provider: 'QuickFix Plumbers' },
-    { id: 204, bookingId: 'BKG-SRV-92104', customerName: 'Shalini Roy', customerPhone: '+91 66554 43322', date: '2026-06-26', time: '04:00 PM', serviceName: 'Full Body Massage Therapy (60m)', total: 1299, status: 'Confirmed', provider: 'Zen Touch Spa' },
-    { id: 205, bookingId: 'BKG-SRV-92105', customerName: 'Rahul Joshi', customerPhone: '+91 55443 32211', date: '2026-06-23', time: '11:30 AM', serviceName: 'Garden Lawn Trimming & Mowing', total: 799, status: 'Canceled', provider: 'GreenScape Gardeners' }
-  ], []);
-
-  const serviceApprovals = useMemo(() => [
-    { id: 301, providerName: 'Precision Electricals', ownerName: 'Sunil Nair', phone: '+91 94455 66778', servicesOffered: 'Electrical & AC Repair', appliedDate: '2026-06-24', status: 'Pending' },
-    { id: 302, providerName: 'Urban Urban Cleaners', ownerName: 'Asha Goel', phone: '+91 93344 55667', servicesOffered: 'Cleaning & Maid Services', appliedDate: '2026-06-23', status: 'Pending' }
-  ], []);
+  const serviceCategories = useMemo(() => [], []);
+  const servicesList = useMemo(() => [], []);
+  const serviceAddonsList = useMemo(() => [], []);
+  const serviceBookings = useMemo(() => [], []);
+  const serviceApprovals = useMemo(() => [], []);
 
   // --- ACTIONS HANDLERS ---
   const handleView = (item) => {
@@ -588,7 +532,7 @@ export default function AdminServicePlaceholder({ title }) {
 
         {/* Footer info pagination mock */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200/60 bg-slate-50">
-          <span className="text-xs text-slate-500 font-medium">Showing 1 to 5 of 5 entries</span>
+          <span className="text-xs text-slate-500 font-medium">Showing 0 to 0 of 0 entries</span>
           <div className="inline-flex gap-1.5">
             <button className="px-3 py-1.5 text-[11px] font-semibold bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-all cursor-not-allowed" disabled>Previous</button>
             <button className="px-3.5 py-1.5 text-[11px] font-bold bg-slate-900 text-white rounded-lg transition-all">1</button>

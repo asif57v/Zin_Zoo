@@ -14,6 +14,24 @@ const ensureWallet = async (userId) => {
     return FoodUserWallet.create({ userId: oid, balance: 0, transactions: [] });
 };
 
+export const addFundByAdmin = async (userId, amountInr, reference = '') => {
+    const amount = Number(amountInr);
+    if (!Number.isFinite(amount) || amount <= 0) {
+        throw new ValidationError('Amount must be greater than 0');
+    }
+    const wallet = await ensureWallet(userId);
+    wallet.transactions.unshift({
+        type: 'addition',
+        amount,
+        status: 'Completed',
+        description: reference ? `Fund added by admin: ${reference}` : 'Fund added by admin',
+        metadata: { source: 'admin_topup', reference }
+    });
+    wallet.balance = Number(wallet.balance || 0) + amount;
+    await wallet.save();
+    return { wallet: await getUserWallet(userId) };
+};
+
 export const creditReferralReward = async (userId, amountInr, metadata = {}) => {
     const amount = Number(amountInr);
     if (!Number.isFinite(amount) || amount <= 0) {

@@ -462,7 +462,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
       if (item.type === "section") {
         item.items.forEach((subItem) => {
           if (subItem.type === "expandable") {
-            state[subItem.label.toLowerCase().replace(/\s+/g, "")] = false
+            state[`${item.label}-${subItem.label}`.toLowerCase().replace(/\s+/g, "")] = false
           }
         })
       }
@@ -569,7 +569,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                 )
 
                 if (matchesLabel || hasMatchingSubItems) {
-                  const sectionKey = subItem.label.toLowerCase().replace(/\s+/g, "")
+                  const sectionKey = `${item.label}-${subItem.label}`.toLowerCase().replace(/\s+/g, "")
                   newExpandedState[sectionKey] = true
                 }
               }
@@ -633,13 +633,14 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
 
       const next = {}
       Object.keys(prev).forEach((key) => {
-        next[key] = key === sectionKey
+        next[key] = false // Close all others
       })
+      next[sectionKey] = true // Explicitly open the clicked one
       return next
     })
   }
 
-  const renderMenuItem = (item, index, isInSection = false) => {
+  const renderMenuItem = (item, index, isInSection = false, parentSectionLabel = "") => {
     const getDisplayLabel = (menuItem) => {
       const rawLabel = String(menuItem?.label || "").trim()
       if (rawLabel) return rawLabel
@@ -700,7 +701,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
 
     if (item.type === "expandable") {
       const Icon = iconMap[item.icon] || Utensils
-      const sectionKey = item.label.toLowerCase().replace(/\s+/g, "")
+      const sectionKey = (parentSectionLabel ? `${parentSectionLabel}-${item.label}` : item.label).toLowerCase().replace(/\s+/g, "")
       const isExpanded = expandedSections[sectionKey] || false
 
       if (isCollapsed) {
@@ -1024,7 +1025,8 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                         renderMenuItem(
                           subItem,
                           subItem?.path || subItem?.label || `${sectionStableKey}-item-${subIndex}`,
-                          true
+                          true,
+                          item.label
                         )
                       )}
                     </div>

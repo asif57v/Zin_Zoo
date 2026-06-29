@@ -1,25 +1,47 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Search, Wallet, Info, Calendar, Edit, Trash2 } from "lucide-react"
-import { emptyWalletBonuses } from "@food/utils/adminFallbackData"
+import { toast } from "sonner"
+import { adminAPI } from "@food/api"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
 
 
 export default function Bonus() {
+  const [loading, setLoading] = useState(false)
   const [activeLanguage, setActiveLanguage] = useState("default")
   const [searchQuery, setSearchQuery] = useState("")
-  const [bonuses, setBonuses] = useState(emptyWalletBonuses)
+  const [bonuses, setBonuses] = useState([])
   const [formData, setFormData] = useState({
+    id: null,
     bonusTitle: "",
     shortDescription: "",
-    bonusType: "Percentage (%)",
+    bonusType: "Percentage",
     bonusAmount: "",
     minAddMoney: "",
     maxBonus: "",
     startDate: "",
     expireDate: "",
   })
+
+  useEffect(() => {
+    fetchBonuses()
+  }, [])
+
+  const fetchBonuses = async () => {
+    try {
+      setLoading(true)
+      const response = await adminAPI.getWalletBonuses()
+      if (response?.data?.success) {
+        setBonuses(response.data.data || [])
+      }
+    } catch (error) {
+      debugError("Error fetching bonuses:", error)
+      toast.error("Failed to load bonuses")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const languageTabs = [
     { key: "default", label: "Default" },
@@ -44,17 +66,37 @@ export default function Bonus() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    debugLog("Form submitted:", formData)
-    alert("Bonus setup saved successfully!")
+    try {
+      if (formData.id) {
+        const response = await adminAPI.updateWalletBonus(formData.id, formData)
+        if (response?.data?.success) {
+          toast.success("Bonus updated successfully")
+          handleReset()
+          fetchBonuses()
+        }
+      } else {
+        const response = await adminAPI.createWalletBonus(formData)
+        if (response?.data?.success) {
+          toast.success("Bonus created successfully")
+          handleReset()
+          fetchBonuses()
+        }
+      }
+    } catch (error) {
+      debugError("Error saving bonus:", error)
+      toast.error(error.response?.data?.message || "Failed to save bonus")
+    }
   }
 
   const handleReset = () => {
+  const handleReset = () => {
     setFormData({
+      id: null,
       bonusTitle: "",
       shortDescription: "",
-      bonusType: "Percentage (%)",
+      bonusType: "Percentage",
       bonusAmount: "",
       minAddMoney: "",
       maxBonus: "",
@@ -62,17 +104,48 @@ export default function Bonus() {
       expireDate: "",
     })
   }
-
-  const handleToggleStatus = (sl) => {
-    setBonuses(bonuses.map(bonus =>
-      bonus.sl === sl ? { ...bonus, status: !bonus.status } : bonus
-    ))
   }
 
-  const handleDelete = (sl) => {
-    if (window.confirm("Are you sure you want to delete this bonus?")) {
-      setBonuses(bonuses.filter(bonus => bonus.sl !== sl))
+  const handleToggleStatus = async (id) => {
+    try {
+      const response = await adminAPI.toggleWalletBonusStatus(id)
+      if (response?.data?.success) {
+        toast.success("Status updated")
+        fetchBonuses()
+      }
+    } catch (error) {
+      debugError("Error toggling status:", error)
+      toast.error("Failed to update status")
     }
+  }
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this bonus?")) {
+      try {
+        const response = await adminAPI.deleteWalletBonus(id)
+        if (response?.data?.success) {
+          toast.success("Bonus deleted")
+          fetchBonuses()
+        }
+      } catch (error) {
+        debugError("Error deleting bonus:", error)
+        toast.error("Failed to delete bonus")
+      }
+    }
+  }
+
+  const handleEdit = (bonus) => {
+    setFormData({
+      id: bonus._id,
+      bonusTitle: bonus.bonusTitle,
+      shortDescription: bonus.shortDescription,
+      bonusType: bonus.bonusType,
+      bonusAmount: bonus.bonusAmount,
+      minAddMoney: bonus.minAddMoney,
+      maxBonus: bonus.maxBonus,
+      startDate: bonus.startDate ? new Date(bonus.startDate).toISOString().split('T')[0] : "",
+      expireDate: bonus.expireDate ? new Date(bonus.expireDate).toISOString().split('T')[0] : "",
+    })
   }
 
   return (
@@ -141,15 +214,15 @@ export default function Bonus() {
                   onChange={(e) => handleInputChange("bonusType", e.target.value)}
                   className="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                 >
-                  <option value="Percentage (%)">Percentage (%)</option>
-                  <option value="Amount ($)">Amount ($)</option>
+                  <option value="Percentage">Percentage (%)</option>
+                  <option value="Amount">Amount ($)</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
                   <div className="flex items-center gap-2">
-                    <span>Bonus Amount ({formData.bonusType === "Percentage (%)" ? "%" : "₹"})</span>
+                    <span>Bonus Amount ({formData.bonusType === "Percentage" ? "%" : "₹"})</span>
                     <Info className="w-4 h-4 text-slate-400" />
                   </div>
                 </label>
@@ -282,29 +355,29 @@ export default function Bonus() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-slate-100">
-                {filteredBonuses.map((bonus) => (
-                  <tr key={bonus.sl} className="hover:bg-slate-50 transition-colors">
+                {filteredBonuses.map((bonus, index) => (
+                  <tr key={bonus._id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-slate-700">{bonus.sl}</span>
+                      <span className="text-sm font-medium text-slate-700">{index + 1}</span>
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-sm font-medium text-slate-900">{bonus.bonusTitle}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-slate-700">{bonus.bonusInfo}</span>
+                      <span className="text-sm text-slate-700">{bonus.shortDescription}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-slate-900">{bonus.bonusAmount}</span>
+                      <span className="text-sm font-medium text-slate-900">{bonus.bonusAmount} {bonus.bonusType === 'Percentage' ? '%' : '₹'}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-slate-700">{bonus.startedOn}</span>
+                      <span className="text-sm text-slate-700">{new Date(bonus.startDate).toLocaleDateString()}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-slate-700">{bonus.expiresOn}</span>
+                      <span className="text-sm text-slate-700">{new Date(bonus.expireDate).toLocaleDateString()}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
-                        onClick={() => handleToggleStatus(bonus.sl)}
+                        onClick={() => handleToggleStatus(bonus._id)}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                           bonus.status ? "bg-blue-600" : "bg-slate-300"
                         }`}
@@ -319,13 +392,14 @@ export default function Bonus() {
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button
+                          onClick={() => handleEdit(bonus)}
                           className="p-1.5 rounded text-blue-600 hover:bg-blue-50 transition-colors"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(bonus.sl)}
+                          onClick={() => handleDelete(bonus._id)}
                           className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"
                           title="Delete"
                         >

@@ -365,6 +365,20 @@ export const initSocket = async (server) => {
     });
 
     logger.info('Socket.IO infrastructure initialized');
+
+    // ─── Public Namespace (No Auth) ─────────────────────────────────
+    // Used for real-time admin→user updates (grocery, services, food, banners)
+    const publicNs = io.of('/public');
+    publicNs.on('connection', (socket) => {
+        logger.info(`Public socket connected: ${socket.id}`);
+        socket.join('public:updates');
+
+        socket.on('disconnect', () => {
+            logger.info(`Public socket disconnected: ${socket.id}`);
+        });
+    });
+    logger.info('Public socket namespace /public initialized (no auth)');
+
     return io;
 };
 
@@ -377,6 +391,29 @@ export const getIO = () => {
         logger.warn('Socket.IO not initialized');
     }
     return io;
+};
+
+/**
+ * Broadcasts a real-time update to all connected public clients.
+ * Used by admin controllers after CRUD operations.
+ * @param {string} eventName - e.g. 'grocery:category:update', 'services:item:update'
+ * @param {object} payload - data to send (e.g. { action: 'create', data: {...} })
+ */
+export const broadcastPublicUpdate = (eventName, payload = {}) => {
+    try {
+        if (!io) {
+            logger.warn(`broadcastPublicUpdate: Socket.IO not initialized, skipping ${eventName}`);
+            return;
+        }
+        const publicNs = io.of('/public');
+        publicNs.to('public:updates').emit(eventName, {
+            ...payload,
+            timestamp: Date.now()
+        });
+        logger.info(`Public broadcast: ${eventName} — ${payload.action || 'update'}`);
+    } catch (err) {
+        logger.warn(`broadcastPublicUpdate failed for ${eventName}: ${err.message}`);
+    }
 };
 
 export const rooms = roomNames;

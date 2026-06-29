@@ -1,6 +1,9 @@
 import { useState, useRef } from "react"
+import { useNavigate } from "react-router-dom"
 import { Upload, Heart, Star, Calendar, CheckCircle2, X } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@food/components/ui/dialog"
+import { adminAPI } from "@food/api"
+import { toast } from "sonner"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -10,6 +13,7 @@ const profilePlaceholder = "https://images.unsplash.com/photo-1555396273-367ea4e
 const coverPlaceholder = "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1200&h=400&fit=crop"
 
 export default function NewAdvertisement() {
+  const navigate = useNavigate()
   const todayStr = new Date().toISOString().split("T")[0]
   const [activeLanguage, setActiveLanguage] = useState("default")
   const [formData, setFormData] = useState({
@@ -35,9 +39,9 @@ export default function NewAdvertisement() {
   const languageTabs = [
     { key: "default", label: "Default" },
     { key: "en", label: "English(EN)" },
-    { key: "bn", label: "Bengali - বাংলা(BN)" },
-    { key: "ar", label: "Arabic - العربية (AR)" },
-    { key: "es", label: "Spanish - espa�ol(ES)" },
+    { key: "bn", label: "Bengali - à¦¬à¦¾à¦‚à¦²à¦¾(BN)" },
+    { key: "ar", label: "Arabic - Ø§Ù„Ø¹Ø±Ø¨ÙŠØ© (AR)" },
+    { key: "es", label: "Spanish - español(ES)" },
   ]
 
   const handleInputChange = (field, value) => {
@@ -154,15 +158,39 @@ export default function NewAdvertisement() {
         coverImage
       })
       
-      setShowSuccessDialog(true)
+      const payload = {
+        title: formData.title,
+        shortDescription: formData.shortDescription,
+        restaurant: formData.restaurant,
+        priority: formData.priority,
+        advertisementType: formData.advertisementType,
+        validity: formData.validity,
+        showReview: formData.showReview,
+        showRatings: formData.showRatings,
+        profileImage: profilePreview, // using base64 for simplicity
+        coverImage: coverPreview,
+      }
       
-      setTimeout(() => {
-        handleReset()
-        setShowSuccessDialog(false)
-      }, 3000)
+      const response = await adminAPI.createAdvertisement(payload)
+      if (response?.data?.success) {
+        setShowSuccessDialog(true)
+        setFormData({
+          title: "",
+          shortDescription: "",
+          restaurant: "",
+          priority: "Priority",
+          advertisementType: "Restaurant Promotion",
+          validity: "",
+          showReview: true,
+          showRatings: true,
+        })
+        setProfileImage(null)
+        setProfilePreview(null)
+        setCoverImage(null)
+        setCoverPreview(null)
+      }
     } catch (error) {
-      debugError("Error submitting form:", error)
-      setFormErrors({ submit: "Failed to create advertisement. Please try again." })
+      toast.error("Failed to create advertisement")
     } finally {
       setIsSubmitting(false)
     }
@@ -264,7 +292,7 @@ export default function NewAdvertisement() {
                         }`}
                       >
                         <option value="">Select Restaurant</option>
-                        <option value="cafe-monarch">Caf� Monarch</option>
+                        <option value="cafe-monarch">Café Monarch</option>
                         <option value="hungry-puppets">Hungry Puppets</option>
                       </select>
                       {formErrors.restaurant && (

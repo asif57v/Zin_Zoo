@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import api from "@food/api"
-import { API_ENDPOINTS } from "@food/api/config"
+import { adminAPI } from "@food/api"
 import { Textarea } from "@food/components/ui/textarea"
 import { legalHtmlToPlainText, plainTextToLegalHtml } from "@food/utils/legalContentFormat"
 const debugLog = (...args) => {}
@@ -26,8 +25,8 @@ export default function PrivacyPolicy() {
   const fetchPrivacyData = async () => {
     try {
       setLoading(true)
-      const response = await api.get(`${API_ENDPOINTS.ADMIN.PRIVACY}?module=${selectedModule}`, { contextModule: "admin" })
-      if (response.data.success && response.data.data) {
+      const response = await adminAPI.getPageContent('privacy', { module: selectedModule })
+      if (response?.data?.success && response?.data?.data) {
         // Convert HTML to plain text for textarea
         const content = response.data.data.content || ''
         const textContent = legalHtmlToPlainText(content)
@@ -64,16 +63,12 @@ export default function PrivacyPolicy() {
       // Convert plain text/markdown to HTML for storage + user rendering
       const htmlContent = plainTextToLegalHtml(privacyData.content)
       
-      const response = await api.put(
-        API_ENDPOINTS.ADMIN.PRIVACY,
-        { 
-          title: privacyData.title, 
-          content: htmlContent,
-          module: selectedModule
-        },
-        { contextModule: "admin" }
-      )
-      if (response.data.success) {
+      const response = await adminAPI.updatePageContent('privacy', { 
+        title: privacyData.title, 
+        content: htmlContent,
+        module: selectedModule
+      })
+      if (response?.data?.success) {
         toast.success('Privacy policy updated successfully')
         // Convert HTML to plain text for display in textarea
         const content = response.data.data.content || ''

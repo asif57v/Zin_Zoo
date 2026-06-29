@@ -1,4 +1,4 @@
-import { Eye, MapPin, Package, User, Phone, Mail, Calendar, Clock, Truck, CreditCard, X, Receipt, CheckCircle2 } from "lucide-react"
+import { Eye, MapPin, Package, User, Phone, Mail, Calendar, Clock, Truck, CreditCard, X, Receipt, CheckCircle2, ArrowLeft } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -6,9 +6,9 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@food/components/ui/dialog"
-const debugLog = (...args) => {}
-const debugWarn = (...args) => {}
-const debugError = (...args) => {}
+const debugLog = (...args) => { }
+const debugWarn = (...args) => { }
+const debugError = (...args) => { }
 
 
 const getStatusColor = (orderStatus) => {
@@ -102,13 +102,25 @@ export default function ViewOrderDialog({ isOpen, onOpenChange, order }) {
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] bg-white p-0 overflow-y-auto">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 sticky top-0 bg-white z-10">
-          <DialogTitle className="flex items-center gap-2">
-            <Eye className="w-5 h-5 text-orange-600" />
-            Order Details
-          </DialogTitle>
-          <DialogDescription>
-            View complete information about this order
-          </DialogDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <DialogTitle className="flex items-center gap-2 text-lg">
+
+                <Eye className="w-5 h-5 text-orange-600" />
+                Order Details
+              </DialogTitle>
+              <DialogDescription className="mt-1 ml-10">
+                View complete information about this order
+              </DialogDescription>
+            </div>
+            <button
+              onClick={() => onOpenChange(false)}
+              className="p-1.5 rounded-full hover:bg-slate-100 transition-colors text-slate-400 hover:text-slate-700"
+              title="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </DialogHeader>
         <div className="px-6 py-6 space-y-6">
           {/* Basic Order Information */}
@@ -153,9 +165,9 @@ export default function ViewOrderDialog({ isOpen, onOpenChange, order }) {
                     Delivered At
                   </p>
                   <p className="text-sm font-medium text-slate-900">
-                    {new Date(order.deliveredAt).toLocaleString('en-GB', { 
-                      day: '2-digit', 
-                      month: 'short', 
+                    {new Date(order.deliveredAt).toLocaleString('en-GB', {
+                      day: '2-digit',
+                      month: 'short',
                       year: 'numeric',
                       hour: '2-digit',
                       minute: '2-digit'
@@ -175,17 +187,17 @@ export default function ViewOrderDialog({ isOpen, onOpenChange, order }) {
                   {order.cancellationReason && (
                     <p className="text-xs text-red-600 mt-1">
                       <span className="font-medium">
-                        {order.cancelledBy === 'user' ? 'Cancelled by User - ' : 
-                         order.cancelledBy === 'restaurant' ? 'Cancelled by Restaurant - ' : 
-                         'Cancellation '}Reason:
+                        {order.cancelledBy === 'user' ? 'Cancelled by User - ' :
+                          order.cancelledBy === 'restaurant' ? 'Cancelled by Restaurant - ' :
+                            'Cancellation '}Reason:
                       </span> {order.cancellationReason}
                     </p>
                   )}
                   {order.cancelledAt && (
                     <p className="text-xs text-slate-500 mt-1">
-                      Cancelled: {new Date(order.cancelledAt).toLocaleString('en-GB', { 
-                        day: '2-digit', 
-                        month: 'short', 
+                      Cancelled: {new Date(order.cancelledAt).toLocaleString('en-GB', {
+                        day: '2-digit',
+                        month: 'short',
                         year: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit'
@@ -255,16 +267,7 @@ export default function ViewOrderDialog({ isOpen, onOpenChange, order }) {
             </div>
           </div>
 
-          {/* Restaurant Information */}
-          {order.restaurant && (
-            <div className="border-t border-slate-200 pt-4">
-              <h3 className="text-sm font-semibold text-slate-700 mb-4">Restaurant Information</h3>
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Restaurant Name</p>
-                <p className="text-sm font-medium text-slate-900">{order.restaurant}</p>
-              </div>
-            </div>
-          )}
+
 
           {/* Order Items */}
           {order.items && Array.isArray(order.items) && order.items.length > 0 && (
@@ -276,23 +279,37 @@ export default function ViewOrderDialog({ isOpen, onOpenChange, order }) {
               <div className="space-y-3">
                 {order.items.map((item, index) => (
                   <div key={index} className="flex items-start justify-between p-3 bg-slate-50 rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-700 bg-white px-2 py-1 rounded">
-                          {item.quantity || 1}x
-                        </span>
-                        <p className="text-sm font-medium text-slate-900">{item.name || "Unknown Item"}</p>
-                        {item.isVeg !== undefined && (
-                          <span className={`text-xs px-1.5 py-0.5 rounded ${item.isVeg ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                            {item.isVeg ? 'Veg' : 'Non-Veg'}
+                    <div className="flex items-start gap-3 flex-1">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name || "Item"}
+                          className="w-12 h-12 rounded-lg object-cover border border-slate-200 flex-shrink-0"
+                          onError={(e) => { e.target.style.display = 'none' }}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-slate-200 flex items-center justify-center flex-shrink-0">
+                          <Package className="w-5 h-5 text-slate-400" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-slate-700 bg-white px-2 py-1 rounded">
+                            {item.quantity || 1}x
                           </span>
+                          <p className="text-sm font-medium text-slate-900 truncate">{item.name || "Unknown Item"}</p>
+                          {item.isVeg !== undefined && (
+                            <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${item.isVeg ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                              {item.isVeg ? 'Veg' : 'Non-Veg'}
+                            </span>
+                          )}
+                        </div>
+                        {item.description && (
+                          <p className="text-xs text-slate-500 mt-1">{item.description}</p>
                         )}
                       </div>
-                      {item.description && (
-                        <p className="text-xs text-slate-500 mt-1 ml-8">{item.description}</p>
-                      )}
                     </div>
-                    <p className="text-sm font-semibold text-slate-900">
+                    <p className="text-sm font-semibold text-slate-900 flex-shrink-0 ml-3">
                       ₹{((item.price || 0) * (item.quantity || 1)).toFixed(2)}
                     </p>
                   </div>
@@ -433,8 +450,8 @@ export default function ViewOrderDialog({ isOpen, onOpenChange, order }) {
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Platform Fee</span>
                 <span className="font-medium text-slate-900">
-                  {order.platformFee !== undefined && order.platformFee > 0 
-                    ? `₹${order.platformFee.toFixed(2)}` 
+                  {order.platformFee !== undefined && order.platformFee > 0
+                    ? `₹${order.platformFee.toFixed(2)}`
                     : <span className="text-slate-400">₹0.00</span>}
                 </span>
               </div>

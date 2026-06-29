@@ -4,6 +4,7 @@ import {
     approveFoodItem,
     rejectFoodItem
 } from '../services/foodApproval.service.js';
+import { broadcastPublicUpdate } from '../../../../config/socket.js';
 
 export async function getPendingFoodApprovals(req, res, next) {
     try {
@@ -18,6 +19,7 @@ export async function approveFoodItemController(req, res, next) {
     try {
         const updated = await approveFoodItem(req.params.id);
         if (!updated) return sendError(res, 404, 'Food item not found or not pending');
+        broadcastPublicUpdate('food:item:update', { action: 'approve', data: updated });
         return sendResponse(res, 200, 'Food item approved successfully', { food: updated });
     } catch (error) {
         next(error);

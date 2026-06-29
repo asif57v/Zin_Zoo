@@ -1,51 +1,121 @@
 import React from "react"
+import { Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
-import { Briefcase, Utensils, ShoppingBag, Sparkles, Shield, Clock, PhoneCall, Gift, HeartHandshake } from "lucide-react"
+import { Briefcase, Shield, Clock, PhoneCall, Zap, Droplets, Sparkles, Hammer, PaintRoller, Fan, Wrench, ShieldCheck, ArrowLeft } from "lucide-react"
+import { servicesPublicAPI } from "@food/api"
+import { usePublicSocket } from "@food/hooks/usePublicSocket"
 
 export default function Services() {
+  const navigate = useNavigate()
+  const [categories, setCategories] = React.useState([])
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  const fetchCategories = async () => {
+    try {
+      const res = await servicesPublicAPI.getCategories()
+      if (res.data?.success) {
+        setCategories(res.data.data.categories || [])
+      }
+    } catch (error) {
+      console.error("Failed to fetch categories:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Real-time updates from admin
+  const socketListeners = React.useMemo(() => ({
+    'services:category:update': () => {
+      console.log('[Services] Category updated via socket, refetching...');
+      fetchCategories();
+    },
+    'services:item:update': () => {
+      console.log('[Services] Service updated via socket');
+    },
+  }), []);
+  usePublicSocket(socketListeners);
+  
   const coreServices = [
     {
-      title: "Food Delivery",
-      description: "Get your favorite meals delivered fast from top-rated local restaurants.",
-      icon: Utensils,
-      color: "from-pink-500 to-rose-500",
+      title: "Electronics Repair",
+      description: "Expert repair and installation for ACs, TVs, refrigerators, and washing machines.",
+      icon: Zap,
+      color: "from-blue-500 to-cyan-500",
+      slug: "electronics-repair",
       badge: "Popular"
     },
     {
-      title: "Grocery Shopping",
-      description: "Fresh groceries, daily essentials, and household items delivered to your doorstep.",
-      icon: ShoppingBag,
-      color: "from-amber-500 to-orange-500",
-      badge: "Fresh"
+      title: "Plumbing Services",
+      description: "Quick fixes for leaks, blockages, pipe installations, and bathroom fittings.",
+      icon: Droplets,
+      color: "from-teal-500 to-emerald-500",
+      slug: "plumbing-services",
+      badge: "Fast"
     },
     {
-      title: "Table Booking & Dining",
-      description: "Book premium tables in advance and enjoy exclusive discounts on dining out.",
+      title: "Deep Cleaning",
+      description: "Professional deep cleaning services for kitchens, bathrooms, and full home.",
       icon: Sparkles,
+      color: "from-amber-500 to-orange-500",
+      slug: "deep-cleaning",
+      badge: "Premium"
+    },
+    {
+      title: "Carpentry Works",
+      description: "Custom woodwork, furniture repair, and professional assembling services.",
+      icon: Hammer,
+      slug: "carpentry",
+      color: "from-rose-500 to-pink-500",
+    },
+    {
+      title: "Painting & Decor",
+      description: "Professional interior and exterior painting, waterproofing, and wallpapers.",
+      icon: PaintRoller,
+      slug: "painting",
       color: "from-purple-500 to-indigo-500",
-      badge: "Elite"
+    },
+    {
+      title: "Electrical Fittings",
+      description: "Wiring, switchboard repairs, inverter installation, and lighting solutions.",
+      icon: Fan,
+      slug: "electrical",
+      color: "from-gray-700 to-gray-900",
     }
   ]
 
   const upcomingServices = [
     {
-      title: "Home Chef Experience",
-      description: "Book certified home chefs to cook customized, fresh meals at your home for special events.",
-      icon: HeartHandshake,
-      color: "from-teal-500 to-emerald-500"
+      title: "Pest Control",
+      description: "Eco-friendly and highly effective pest control services for your entire home.",
+      icon: ShieldCheck,
+      color: "from-green-500 to-emerald-600"
     },
     {
-      title: "Event Catering",
-      description: "Tailored bulk catering services for parties, weddings, corporate events, and celebrations.",
-      icon: Gift,
-      color: "from-blue-500 to-cyan-500"
+      title: "Home Security Setup",
+      description: "Installation of CCTV cameras, smart locks, and complete home security systems.",
+      icon: Wrench,
+      color: "from-indigo-500 to-blue-600"
     }
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-[#0a0a0a] pt-4 pb-24 md:pt-24 md:pb-12 px-4 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-[#0a0a0a] pt-4 pb-24 md:pt-24 md:pb-12 px-4 max-w-7xl mx-auto relative">
+      
+      {/* Back Button */}
+      <button 
+        onClick={() => navigate("/food")} 
+        className="absolute top-4 left-4 md:top-8 md:left-8 p-2.5 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 rounded-full shadow-sm border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors z-50"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </button>
+
       {/* Header Section */}
-      <div className="text-center max-w-2xl mx-auto mb-10 md:mb-16">
+      <div className="text-center max-w-2xl mx-auto mb-10 md:mb-16 mt-12 md:mt-0">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -60,9 +130,9 @@ export default function Services() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-4"
+          className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-4 py-1 leading-normal md:leading-normal"
         >
-          Convenience, <span className="bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">Reimagined</span>
+          Expert Services, <span className="bg-gradient-to-r from-blue-500 to-teal-400 bg-clip-text text-transparent pb-2">At Your Doorstep</span>
         </motion.h1>
 
         <motion.p
@@ -71,7 +141,7 @@ export default function Services() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="text-sm md:text-base text-gray-500 dark:text-gray-400"
         >
-          Explore the range of premium services we offer to make your life simpler, healthier, and more delightful every day.
+          From quick plumbing fixes to deep home cleaning, explore our range of verified and professional home services.
         </motion.p>
       </div>
 
@@ -82,40 +152,52 @@ export default function Services() {
           Core Services
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {coreServices.map((service, index) => {
-            const Icon = service.icon
-            return (
-              <motion.div
-                key={service.title}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                className="relative bg-white dark:bg-[#121212] rounded-2xl border border-gray-100 dark:border-gray-900 p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] dark:shadow-none overflow-hidden group"
-              >
-                {/* Decorative background glow */}
-                <div className={`absolute -right-12 -top-12 w-32 h-32 rounded-full bg-gradient-to-br ${service.color} opacity-5 blur-2xl group-hover:scale-150 transition-transform duration-700`} />
-                
-                <div className="flex justify-between items-start mb-6">
-                  <div className={`p-4 rounded-2xl bg-gradient-to-br ${service.color} text-white shadow-lg shadow-orange-500/10`}>
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  {service.badge && (
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider bg-gradient-to-r ${service.color} text-white`}>
-                      {service.badge}
-                    </span>
+          {loading ? (
+            // Skeleton loaders
+            Array(3).fill(0).map((_, idx) => (
+              <div key={idx} className="h-48 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />
+            ))
+          ) : categories.length > 0 ? (
+            categories.map((category, index) => {
+              // Extract a fallback color for the background
+              const color = "from-blue-500 to-cyan-500";
+              const slug = category.name.toLowerCase().replace(/\s+/g, '-');
+              
+              return (
+                <Link to={`/food/user/services/${slug}?categoryId=${category._id}`} key={category._id}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    whileHover={{ y: -8 }}
+                    className="relative h-56 md:h-64 rounded-2xl overflow-hidden group cursor-pointer shadow-lg shadow-gray-200/50 dark:shadow-none"
+                  >
+                  {/* Background Image */}
+                  {category.image ? (
+                    <img src={category.image} alt={category.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  ) : (
+                    <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-80`} />
                   )}
-                </div>
 
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-orange-500 transition-colors">
-                  {service.title}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                  {service.description}
-                </p>
-              </motion.div>
-            )
-          })}
+                  {/* Gradient Overlay for Text Readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                  
+                  {/* Content (Text on top) */}
+                  <div className="absolute inset-x-0 bottom-0 p-6 flex flex-col justify-end z-10">
+                    <h3 className="text-xl md:text-2xl font-bold text-white mb-1 group-hover:text-blue-300 transition-colors">
+                      {category.name}
+                    </h3>
+                    <p className="text-sm font-medium text-gray-300">
+                      {category.subCategories?.length || 0} Sub-categories available
+                    </p>
+                  </div>
+                  </motion.div>
+                </Link>
+              )
+            })
+          ) : (
+            <p className="col-span-3 text-center text-gray-500 py-10">No core services available right now.</p>
+          )}
         </div>
       </div>
 

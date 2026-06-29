@@ -101,7 +101,6 @@ export function useOrdersManagement(orders, statusKey, title) {
     maxAmount: "",
     fromDate: "",
     toDate: "",
-    restaurant: "",
   })
   const [visibleColumns, setVisibleColumns] = useState({
     si: true,
@@ -109,7 +108,6 @@ export function useOrdersManagement(orders, statusKey, title) {
     orderDate: true,
     orderOtp: true,
     customer: true,
-    restaurant: true,
     foodItems: true,
     totalAmount: true,
     paymentType: true,
@@ -194,9 +192,7 @@ export function useOrdersManagement(orders, statusKey, title) {
       })
     }
 
-    if (filters.restaurant) {
-      result = result.filter(order => order.restaurant === filters.restaurant)
-    }
+
 
     // Helper function to parse date format "16 JUL 2025"
     const parseOrderDate = (dateStr) => {
@@ -253,7 +249,6 @@ export function useOrdersManagement(orders, statusKey, title) {
       maxAmount: "",
       fromDate: "",
       toDate: "",
-      restaurant: "",
     })
   }
 
@@ -597,7 +592,6 @@ export function useOrdersManagement(orders, statusKey, title) {
       orderDate: true,
       orderOtp: true,
       customer: true,
-      restaurant: true,
       foodItems: true,
       totalAmount: true,
       paymentType: true,

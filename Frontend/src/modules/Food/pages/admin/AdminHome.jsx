@@ -163,7 +163,6 @@ export default function AdminHome() {
 
   const activityFeed = dashboardData?.liveSignals || []
   const totalRevenueHelper = [
-    `Comm: ${formatCurrency(commissionTotal)}`,
     `Platform: ${formatCurrency(platformFeeTotal)}`,
     `Delivery Net: ${formatCurrency(deliveryProfit)}`,
     `GST: ${formatCurrency(gstTotal)}`,
@@ -229,14 +228,6 @@ export default function AdminHome() {
               path="/admin/food/transaction-report"
             />
             <MetricCard
-              title="Commission earned"
-              value={formatCurrency(commissionTotal)}
-              helper={`${periodLabel} restaurant cut`}
-              icon={<ArrowUpRight className="h-5 w-5 text-indigo-600" />}
-              accent="bg-indigo-200/40"
-              path="/admin/food/restaurants/commission"
-            />
-            <MetricCard
               title="Orders processed"
               value={activeOrdersTotal.toLocaleString("en-IN")}
               helper="Orders currently being processed"
@@ -276,38 +267,7 @@ export default function AdminHome() {
               accent="bg-green-200/40"
               path="/admin/food/transaction-report"
             />
-            <MetricCard
-              title="Total restaurants"
-              value={totalRestaurants.toLocaleString("en-IN")}
-              helper="Approved restaurants"
-              icon={<Store className="h-5 w-5 text-blue-600" />}
-              accent="bg-blue-200/40"
-              path="/admin/food/restaurants"
-            />
-            <MetricCard
-              title="Restaurant request pending"
-              value={pendingRestaurantRequests.toLocaleString("en-IN")}
-              helper="Awaiting approval"
-              icon={<UserCheck className="h-5 w-5 text-orange-600" />}
-              accent="bg-orange-200/40"
-              path="/admin/food/restaurants/joining-request"
-            />
-            <MetricCard
-              title="Total delivery boy"
-              value={totalDeliveryBoys.toLocaleString("en-IN")}
-              helper="Approved delivery partners"
-              icon={<Truck className="h-5 w-5 text-indigo-600" />}
-              accent="bg-indigo-200/40"
-              path="/admin/food/delivery-partners"
-            />
-            <MetricCard
-              title="Delivery boy request pending"
-              value={pendingDeliveryBoyRequests.toLocaleString("en-IN")}
-              helper="Awaiting verification"
-              icon={<Clock className="h-5 w-5 text-yellow-600" />}
-              accent="bg-yellow-200/40"
-              path="/admin/food/delivery-partners/join-request"
-            />
+
             <MetricCard
               title="Total foods"
               value={totalFoods.toLocaleString("en-IN")}
@@ -315,14 +275,6 @@ export default function AdminHome() {
               icon={<Package className="h-5 w-5 text-purple-600" />}
               accent="bg-purple-200/40"
               path="/admin/food/foods"
-            />
-            <MetricCard
-              title="Total addons"
-              value={totalAddons.toLocaleString("en-IN")}
-              helper="Approved addon items"
-              icon={<Plus className="h-5 w-5 text-pink-600" />}
-              accent="bg-pink-200/40"
-              path="/admin/food/addons"
             />
             <MetricCard
               title="Total customers"
@@ -338,7 +290,7 @@ export default function AdminHome() {
               helper="Orders awaiting processing"
               icon={<Clock className="h-5 w-5 text-red-600" />}
               accent="bg-red-200/40"
-              path="/admin/food/orders/pending"
+              path="/admin/food/global-orders/pending"
             />
             <MetricCard
               title="Completed orders"
@@ -346,7 +298,7 @@ export default function AdminHome() {
               helper="Successfully delivered"
               icon={<CheckCircle className="h-5 w-5 text-emerald-600" />}
               accent="bg-emerald-200/40"
-              path="/admin/food/orders/delivered"
+              path="/admin/food/global-orders/completed"
             />
           </div>
 
@@ -367,10 +319,7 @@ export default function AdminHome() {
                           <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.25} />
                           <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
                         </linearGradient>
-                        <linearGradient id="comFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#a855f7" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
-                        </linearGradient>
+
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis dataKey="month" stroke="#6b7280" />
@@ -389,14 +338,7 @@ export default function AdminHome() {
                         fill="url(#revFill)"
                         name="Gross revenue"
                       />
-                      <Area
-                        type="monotone"
-                        dataKey="commission"
-                        stroke="#a855f7"
-                        fillOpacity={1}
-                        fill="url(#comFill)"
-                        name="Commission"
-                      />
+
                       <Bar
                         dataKey="orders"
                         fill="#ef4444"
@@ -494,7 +436,7 @@ export default function AdminHome() {
                       />
                       <Legend />
                       <Bar dataKey="orders" fill="#0ea5e9" radius={[8, 8, 0, 0]} name="Orders" />
-                      <Bar dataKey="commission" fill="#a855f7" radius={[8, 8, 0, 0]} name="Commission" />
+
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

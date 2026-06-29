@@ -9,7 +9,7 @@ import { publicGetOnce } from "@food/api";
 
 const SETTINGS_KEY = 'food_business_settings';
 const DEFAULT_MODULE_POWER_SCANNING = {
-  user: { themeColor: "#FA0272", fontFamily: "Poppins" },
+  user: { themeColor: "#EB590E", fontFamily: "Poppins" },
   restaurant: { themeColor: "#2563EB", fontFamily: "Poppins" },
   delivery: { themeColor: "#00B761", fontFamily: "Poppins" },
 };
@@ -494,13 +494,6 @@ export const applyModulePowerScanning = (moduleName = "user", settingsOverride =
   document.body.style.setProperty("font-family", fontStack, "important");
   document.body.style.fontFamily = fontStack;
 
-  let themeMeta = document.querySelector('meta[name="theme-color"]');
-  if (!themeMeta) {
-    themeMeta = document.createElement("meta");
-    themeMeta.setAttribute("name", "theme-color");
-    document.head.appendChild(themeMeta);
-  }
-  themeMeta.setAttribute("content", themeColor);
 
   let styleTag = document.getElementById("module-power-scanning-overrides");
   if (!styleTag) {

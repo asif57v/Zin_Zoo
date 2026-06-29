@@ -403,7 +403,6 @@ export default function Category() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 rounded-full border border-slate-200 p-1">
               <button
                 type="button"
                 onClick={() => setShowPendingOnly(false)}
@@ -411,14 +410,6 @@ export default function Category() {
               >
                 All
               </button>
-              <button
-                type="button"
-                onClick={() => setShowPendingOnly(true)}
-                className={`rounded-full px-3 py-2 text-xs font-semibold ${showPendingOnly ? "bg-amber-600 text-white" : "text-slate-600"}`}
-              >
-                Pending
-              </button>
-            </div>
 
             <div className="relative min-w-[220px]">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -456,12 +447,10 @@ export default function Category() {
           <table className="min-w-full table-fixed">
             <thead className="border-b border-slate-200 bg-slate-50">
               <tr>
-                <th className="w-[25%] px-5 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-600">Category</th>
-                <th className="w-[17%] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-600">Owner</th>
-                <th className="w-[15%] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-600">Zone</th>
-                <th className="w-[10%] px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600">Diet</th>
-                <th className="w-[10%] px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600">Status</th>
-                <th className="w-[13%] px-4 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-600">Approval</th>
+                <th className="w-[30%] px-5 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-600">Category</th>
+                
+                <th className="w-[15%] px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600">Diet</th>
+                <th className="w-[15%] px-4 py-4 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600">Status</th>
                 <th className="w-[20%] px-5 py-4 text-right text-[11px] font-bold uppercase tracking-wider text-slate-600">Actions</th>
               </tr>
             </thead>
@@ -511,25 +500,9 @@ export default function Category() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-5 text-sm text-slate-600">
-                        <div className="space-y-1">
-                          <p className="font-medium leading-6 text-slate-800">{creatorName}</p>
-                          <p className="text-xs text-slate-400">
-                            {category?.isGlobal ? "Global category" : "Private to creator"}
-                          </p>
-                          {category?.isGlobal && isRestaurantCategory && (
-                            <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-2 py-1 text-[11px] font-semibold text-sky-700">
-                              <Globe className="mr-1 h-3.5 w-3.5" />
-                              Shared
-                            </span>
-                          )}
-                        </div>
-                      </td>
+
                       <td className="px-4 py-5">
                         <div className="max-w-[180px]">
-                          <p className="truncate text-sm font-medium text-slate-700" title={zoneText}>
-                            {zoneText}
-                          </p>
                         </div>
                       </td>
                       <td className="px-4 py-5 text-center">
@@ -546,45 +519,9 @@ export default function Category() {
                           <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${category?.status ? "translate-x-6" : "translate-x-1"}`} />
                         </button>
                       </td>
-                      <td className="px-4 py-5">
-                        <div className="space-y-2">
-                          <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${approvalBadgeClass(approvalStatus)}`}>
-                            {approvalStatus === "approved" && <BadgeCheck className="mr-1 h-3.5 w-3.5" />}
-                            {approvalStatus.charAt(0).toUpperCase() + approvalStatus.slice(1)}
-                          </span>
-                          {category?.rejectionReason && (
-                            <p className="max-w-[180px] text-xs leading-5 text-rose-600">{category.rejectionReason}</p>
-                          )}
-                        </div>
-                      </td>
+
                       <td className="px-5 py-5">
                         <div className="flex flex-col items-end gap-2">
-                          <div className="flex flex-wrap justify-end gap-2">
-                            {approvalStatus !== "approved" && (
-                              <button
-                                onClick={() => handleApprove(categoryId)}
-                                className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm"
-                              >
-                                Approve
-                              </button>
-                            )}
-                            {isRestaurantCategory && approvalStatus !== "rejected" && (
-                              <button
-                                onClick={() => handleReject(category)}
-                                className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm"
-                              >
-                                Reject
-                              </button>
-                            )}
-                            {isRestaurantCategory && !category?.isGlobal && approvalStatus === "approved" && (
-                              <button
-                                onClick={() => handleMakeGlobal(category)}
-                                className="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm"
-                              >
-                                Make Global
-                              </button>
-                            )}
-                          </div>
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => handleEdit(category)}
@@ -639,27 +576,7 @@ export default function Category() {
 
                     <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
                       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-slate-700">Zone</label>
-                          <select
-                            value={formData.zoneId}
-                            onChange={(event) => setFormData((prev) => ({ ...prev, zoneId: event.target.value }))}
-                            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-slate-900"
-                          >
-                            <option value="global">Global (all zones)</option>
-                            {zonesLoading && <option value="" disabled>Loading zones...</option>}
-                            {zones.map((zone) => {
-                              const id = String(zone?._id || zone?.id || "")
-                              const label = zone?.name || zone?.zoneName || zone?.serviceLocation || id
-                              return (
-                                <option key={id} value={id}>
-                                  {label}
-                                </option>
-                              )
-                            })}
-                          </select>
-                        </div>
-
+                        
                         <div>
                           <label className="mb-2 block text-sm font-medium text-slate-700">Diet Scope</label>
                           <select

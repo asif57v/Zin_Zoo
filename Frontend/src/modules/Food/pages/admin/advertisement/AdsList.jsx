@@ -1,17 +1,19 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Search, Download, ChevronDown, Plus, MoreVertical, Building2, Settings, Filter, FileDown, FileSpreadsheet, FileText, Code, Eye, Edit, Trash2 } from "lucide-react"
-import { emptyAds } from "@food/utils/adminFallbackData"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@food/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@food/components/ui/dialog"
 import SettingsDialog from "@food/components/admin/orders/SettingsDialog"
 import { exportAdvertisementsToCSV, exportAdvertisementsToExcel, exportAdvertisementsToPDF, exportAdvertisementsToJSON } from "@food/components/admin/advertisements/advertisementsExportUtils"
+import { adminAPI } from "@food/api"
+import { toast } from "sonner"
 
 export default function AdsList() {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState("")
   const [adsType, setAdsType] = useState("all")
-  const [ads, setAds] = useState(emptyAds)
+  const [ads, setAds] = useState([])
+  const [loading, setLoading] = useState(false)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isViewOpen, setIsViewOpen] = useState(false)
@@ -46,19 +48,37 @@ export default function AdsList() {
     actions: "Actions",
   }
 
+  useEffect(() => {
+    fetchAds()
+  }, [])
+
+  const fetchAds = async () => {
+    try {
+      setLoading(true)
+      const response = await adminAPI.getAdvertisements()
+      if (response?.data?.success) {
+        setAds(response.data.data || [])
+      }
+    } catch (error) {
+      toast.error("Failed to load advertisements")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const filteredAds = useMemo(() => {
     let result = [...ads]
     
     if (adsType !== "all") {
-      result = result.filter(ad => ad.adsType === adsType)
+      result = result.filter(ad => ad.advertisementType === adsType)
     }
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
       result = result.filter(ad =>
-        ad.adsId?.toLowerCase().includes(query) ||
-        ad.restaurantName?.toLowerCase().includes(query) ||
-        ad.adsTitle?.toLowerCase().includes(query)
+        ad._id?.toLowerCase().includes(query) ||
+        ad.restaurant?.toLowerCase().includes(query) ||
+        ad.title?.toLowerCase().includes(query)
       )
     }
 
@@ -67,7 +87,7 @@ export default function AdsList() {
     }
 
     if (filters.restaurant) {
-      result = result.filter(ad => ad.restaurantName === filters.restaurant)
+      result = result.filter(ad => ad.restaurant === filters.restaurant)
     }
 
     if (filters.priority) {
@@ -99,10 +119,16 @@ export default function AdsList() {
     }
   }
 
-  const handlePriorityChange = (sl, newPriority) => {
-    setAds(ads.map(ad =>
-      ad.sl === sl ? { ...ad, priority: newPriority } : ad
-    ))
+  const handlePriorityChange = async (id, newPriority) => {
+    try {
+      const response = await adminAPI.updateAdvertisement(id, { priority: newPriority })
+      if (response?.data?.success) {
+        toast.success("Priority updated")
+        fetchAds()
+      }
+    } catch (error) {
+      toast.error("Failed to update priority")
+    }
   }
 
   const handleViewAd = (ad) => {
@@ -119,11 +145,19 @@ export default function AdsList() {
     setIsDeleteOpen(true)
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selectedAd) {
-      setAds(ads.filter(ad => ad.sl !== selectedAd.sl))
-      setIsDeleteOpen(false)
-      setSelectedAd(null)
+      try {
+        const response = await adminAPI.deleteAdvertisement(selectedAd._id)
+        if (response?.data?.success) {
+          toast.success("Advertisement deleted")
+          fetchAds()
+          setIsDeleteOpen(false)
+          setSelectedAd(null)
+        }
+      } catch (error) {
+        toast.error("Failed to delete advertisement")
+      }
     }
   }
 
@@ -157,7 +191,7 @@ export default function AdsList() {
     })
   }
 
-  const restaurants = [...new Set(ads.map(ad => ad.restaurantName))].filter(Boolean)
+  const restaurants = [...new Set(ads.map(ad => ad.restaurant))].filter(Boolean)
   const statuses = [...new Set(ads.map(ad => ad.status))].filter(Boolean)
 
   return (
@@ -280,7 +314,13 @@ export default function AdsList() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
-              {filteredAds.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={Object.values(visibleColumns).filter(v => v).length} className="px-6 py-20 text-center">
+                    <p className="text-lg font-semibold text-slate-700 mb-1">Loading...</p>
+                  </td>
+                </tr>
+              ) : filteredAds.length === 0 ? (
                 <tr>
                   <td colSpan={Object.values(visibleColumns).filter(v => v).length} className="px-6 py-20 text-center">
                     <p className="text-lg font-semibold text-slate-700 mb-1">No Data Found</p>
@@ -288,14 +328,14 @@ export default function AdsList() {
                   </td>
                 </tr>
               ) : (
-                filteredAds.map((ad) => (
+                filteredAds.map((ad, index) => (
                   <tr
-                    key={ad.sl}
+                    key={ad._id}
                     className="hover:bg-slate-50 transition-colors"
                   >
                     {visibleColumns.si && (
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-slate-700">{ad.sl}</span>
+                        <span className="text-sm font-medium text-slate-700">{index + 1}</span>
                       </td>
                     )}
                     {visibleColumns.adsId && (
@@ -304,13 +344,13 @@ export default function AdsList() {
                           onClick={() => handleViewAd(ad)}
                           className="text-sm font-medium text-blue-600 hover:text-blue-700"
                         >
-                          {ad.adsId}
+                          {ad._id.slice(-6).toUpperCase()}
                         </button>
                       </td>
                     )}
                     {visibleColumns.adsTitle && (
                       <td className="px-6 py-4">
-                        <span className="text-sm font-medium text-slate-900">{ad.adsTitle}</span>
+                        <span className="text-sm font-medium text-slate-900">{ad.title}</span>
                       </td>
                     )}
                     {visibleColumns.restaurantInfo && (
@@ -320,20 +360,19 @@ export default function AdsList() {
                             <Building2 className="w-5 h-5 text-orange-600" />
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-slate-900">{ad.restaurantName}</span>
-                            <span className="text-xs text-slate-500">{ad.restaurantEmail}</span>
+                            <span className="text-sm font-medium text-slate-900">{ad.restaurant || 'N/A'}</span>
                           </div>
                         </div>
                       </td>
                     )}
                     {visibleColumns.adsType && (
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-slate-700">{ad.adsType}</span>
+                        <span className="text-sm text-slate-700">{ad.advertisementType}</span>
                       </td>
                     )}
                     {visibleColumns.duration && (
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-slate-700">{ad.duration}</span>
+                        <span className="text-sm text-slate-700">{ad.validity}</span>
                       </td>
                     )}
                     {visibleColumns.status && (
@@ -347,7 +386,7 @@ export default function AdsList() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <select
                           value={ad.priority || ""}
-                          onChange={(e) => handlePriorityChange(ad.sl, e.target.value)}
+                          onChange={(e) => handlePriorityChange(ad._id, e.target.value)}
                           className="px-2 py-1 text-xs border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-slate-400"
                         >
                           <option value="">N/A</option>
@@ -494,27 +533,23 @@ export default function AdsList() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Ads ID</p>
-                  <p className="text-sm text-slate-900">{selectedAd.adsId}</p>
+                  <p className="text-sm text-slate-900">{selectedAd._id}</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Ads Title</p>
-                  <p className="text-sm text-slate-900">{selectedAd.adsTitle}</p>
+                  <p className="text-sm text-slate-900">{selectedAd.title}</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Restaurant Name</p>
-                  <p className="text-sm text-slate-900">{selectedAd.restaurantName}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-700">Restaurant Email</p>
-                  <p className="text-sm text-slate-900">{selectedAd.restaurantEmail}</p>
+                  <p className="text-sm text-slate-900">{selectedAd.restaurant || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Ads Type</p>
-                  <p className="text-sm text-slate-900">{selectedAd.adsType}</p>
+                  <p className="text-sm text-slate-900">{selectedAd.advertisementType}</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Duration</p>
-                  <p className="text-sm text-slate-900">{selectedAd.duration}</p>
+                  <p className="text-sm text-slate-900">{selectedAd.validity}</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Status</p>

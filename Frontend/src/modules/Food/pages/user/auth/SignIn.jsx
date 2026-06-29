@@ -154,18 +154,13 @@ export default function SignIn() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="relative z-10 flex flex-col items-center gap-4"
         >
-          <div className="w-24 h-24 bg-white rounded-[2.2rem] flex items-center justify-center shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-4 border-white/10 overflow-hidden p-2">
-            {logoUrl ? (
-              <img src={logoUrl} alt="dooriq" className="w-full h-full object-contain" />
-            ) : (
-              <span className="text-[#FA0272] text-5xl font-black not-italic">D</span>
-            )}
-          </div>
-          <div className="text-center">
-            <h1 className="text-white font-black text-4xl tracking-tight leading-none mb-1">
-              dooriq
-            </h1>
-            <div className="h-0.5 w-12 bg-white/40 mx-auto rounded-full" />
+          {/* Tightly cropped container to hide the extra white background of the image */}
+          <div className="w-[220px] h-[65px] flex items-center justify-center overflow-hidden rounded-lg shadow-lg">
+            <img 
+              src="/zinzoo-logo.png" 
+              alt="Zin Zoo-X" 
+              className="w-[380px] max-w-none object-cover" 
+            />
           </div>
         </motion.div>
       </div>

@@ -213,32 +213,18 @@ export default function UnifiedOTPFastLogin() {
         </div>
         
         <div className="relative z-10 flex flex-col items-center">
-          <motion.div 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-3 shadow-xl overflow-hidden"
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="w-[220px] h-[65px] flex items-center justify-center overflow-hidden rounded-lg shadow-lg mb-2"
           >
-             {logoUrl ? (
-               <img
-                 src={logoUrl}
-                 alt="dooriq"
-                 className="h-full w-full object-contain p-1.5"
-                 loading="eager"
-               />
-             ) : (
-               <span className="text-[#FA0272] text-3xl font-black">D</span>
-             )}
+            <img 
+              src="/zinzoo-logo.png" 
+              alt="Zin Zoo-X" 
+              className="w-[380px] max-w-none object-cover" 
+            />
           </motion.div>
-          <motion.h1 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-2xl md:text-5xl font-black tracking-tight mb-1"
-          >
-            dooriq
-          </motion.h1>
-          <p className="text-xs md:text-base font-bold text-white/90 tracking-[0.2em] uppercase">
-            Taste the best, forget the rest
-          </p>
         </div>
       </div>
 

@@ -1,10 +1,35 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Search, Download, ChevronDown, ArrowUpDown, Plus, Edit, Trash2, Megaphone, Settings } from "lucide-react"
-import { emptyFoodCampaigns } from "@food/utils/adminFallbackData"
+import AddEditFoodCampaignDialog from "@food/components/admin/campaigns/AddEditFoodCampaignDialog"
+import DeleteCampaignDialog from "@food/components/admin/campaigns/DeleteCampaignDialog"
+import { adminAPI } from "@food/api"
+import { toast } from "sonner"
 
 export default function FoodCampaign() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [campaigns, setCampaigns] = useState(emptyFoodCampaigns)
+  const [campaigns, setCampaigns] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [isAddEditOpen, setIsAddEditOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [selectedCampaign, setSelectedCampaign] = useState(null)
+
+  useEffect(() => {
+    fetchCampaigns()
+  }, [])
+
+  const fetchCampaigns = async () => {
+    try {
+      setLoading(true)
+      const response = await adminAPI.getCampaigns()
+      if (response?.data?.success) {
+        setCampaigns((response.data.data || []).filter(c => c.campaignType === 'food'))
+      }
+    } catch (error) {
+      toast.error("Failed to load campaigns")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredCampaigns = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -17,16 +42,67 @@ export default function FoodCampaign() {
     )
   }, [campaigns, searchQuery])
 
-  const handleToggleStatus = (sl) => {
-    setCampaigns(campaigns.map(campaign =>
-      campaign.sl === sl ? { ...campaign, status: !campaign.status } : campaign
-    ))
+  const handleToggleStatus = async (id) => {
+    try {
+      const response = await adminAPI.toggleCampaignStatus(id)
+      if (response?.data?.success) {
+        toast.success("Status updated")
+        fetchCampaigns()
+      }
+    } catch (error) {
+      toast.error("Failed to update status")
+    }
   }
 
-  const handleDelete = (sl) => {
-    if (window.confirm("Are you sure you want to delete this campaign?")) {
-      setCampaigns(campaigns.filter(campaign => campaign.sl !== sl))
+  const handleDelete = async (id) => {
+    try {
+      const response = await adminAPI.deleteCampaign(id)
+      if (response?.data?.success) {
+        toast.success("Campaign deleted")
+        fetchCampaigns()
+        setIsDeleteOpen(false)
+      }
+    } catch (error) {
+      toast.error("Failed to delete campaign")
     }
+  }
+
+  const handleEdit = (campaign) => {
+    setSelectedCampaign(campaign)
+    setIsAddEditOpen(true)
+  }
+
+  const handleAdd = () => {
+    setSelectedCampaign(null)
+    setIsAddEditOpen(true)
+  }
+
+  const handleSave = async (formData) => {
+    try {
+      const payload = { ...formData, campaignType: 'food' }
+      if (selectedCampaign) {
+        const response = await adminAPI.updateCampaign(selectedCampaign._id, payload)
+        if (response?.data?.success) {
+          toast.success("Campaign updated")
+          fetchCampaigns()
+          setIsAddEditOpen(false)
+        }
+      } else {
+        const response = await adminAPI.createCampaign(payload)
+        if (response?.data?.success) {
+          toast.success("Campaign created")
+          fetchCampaigns()
+          setIsAddEditOpen(false)
+        }
+      }
+    } catch (error) {
+      toast.error("Failed to save campaign")
+    }
+  }
+
+  const handleDeleteClick = (campaign) => {
+    setSelectedCampaign(campaign)
+    setIsDeleteOpen(true)
   }
 
   return (
@@ -46,7 +122,10 @@ export default function FoodCampaign() {
             </div>
           </div>
 
-          <button className="px-4 py-2.5 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 transition-all shadow-md">
+          <button 
+            onClick={handleAdd}
+            className="px-4 py-2.5 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2 transition-all shadow-md"
+          >
             <Plus className="w-4 h-4" />
             Add New Campaign
           </button>
@@ -124,7 +203,13 @@ export default function FoodCampaign() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
-              {filteredCampaigns.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-20 text-center">
+                    <p className="text-lg font-semibold text-slate-700 mb-1">Loading...</p>
+                  </td>
+                </tr>
+              ) : filteredCampaigns.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-20 text-center">
                     <p className="text-lg font-semibold text-slate-700 mb-1">No Data Found</p>
@@ -132,13 +217,13 @@ export default function FoodCampaign() {
                   </td>
                 </tr>
               ) : (
-                filteredCampaigns.map((campaign) => (
+                filteredCampaigns.map((campaign, index) => (
                   <tr
-                    key={campaign.sl}
+                    key={campaign._id}
                     className="hover:bg-slate-50 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-slate-700">{campaign.sl}</span>
+                      <span className="text-sm font-medium text-slate-700">{index + 1}</span>
                     </td>
                     <td className="px-6 py-4">
                       <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-700">
@@ -156,7 +241,7 @@ export default function FoodCampaign() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
-                        onClick={() => handleToggleStatus(campaign.sl)}
+                        onClick={() => handleToggleStatus(campaign._id)}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                           campaign.status ? "bg-blue-600" : "bg-slate-300"
                         }`}
@@ -171,13 +256,14 @@ export default function FoodCampaign() {
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button
+                          onClick={() => handleEdit(campaign)}
                           className="p-1.5 rounded text-blue-600 hover:bg-blue-50 transition-colors"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(campaign.sl)}
+                          onClick={() => handleDeleteClick(campaign)}
                           className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"
                           title="Delete"
                         >
@@ -192,6 +278,22 @@ export default function FoodCampaign() {
           </table>
         </div>
       </div>
+
+      {/* Add/Edit Dialog */}
+      <AddEditFoodCampaignDialog
+        isOpen={isAddEditOpen}
+        onOpenChange={setIsAddEditOpen}
+        campaign={selectedCampaign}
+        onSave={handleSave}
+      />
+
+      {/* Delete Dialog */}
+      <DeleteCampaignDialog
+        isOpen={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        campaign={selectedCampaign}
+        onConfirm={() => handleDelete(selectedCampaign._id)}
+      />
     </div>
   )
 }

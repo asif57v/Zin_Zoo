@@ -1,16 +1,18 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Search, Download, ChevronDown, ArrowUpDown, Plus, Edit, Trash2, Megaphone, Filter, Settings, FileSpreadsheet, FileDown, FileText, Code } from "lucide-react"
-import { emptyBasicCampaigns } from "@food/utils/adminFallbackData"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@food/components/ui/dropdown-menu"
 import { exportCampaignsToCSV, exportCampaignsToExcel, exportCampaignsToPDF, exportCampaignsToJSON } from "@food/components/admin/campaigns/campaignsExportUtils"
 import AddEditBasicCampaignDialog from "@food/components/admin/campaigns/AddEditBasicCampaignDialog"
 import DeleteCampaignDialog from "@food/components/admin/campaigns/DeleteCampaignDialog"
 import CampaignFilterPanel from "@food/components/admin/campaigns/CampaignFilterPanel"
 import SettingsDialog from "@food/components/admin/orders/SettingsDialog"
+import { adminAPI } from "@food/api"
+import { toast } from "sonner"
 
 export default function BasicCampaign() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [campaigns, setCampaigns] = useState(emptyBasicCampaigns)
+  const [campaigns, setCampaigns] = useState([])
+  const [loading, setLoading] = useState(false)
   const [isAddEditOpen, setIsAddEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
@@ -29,6 +31,24 @@ export default function BasicCampaign() {
     status: true,
     actions: true,
   })
+
+  useEffect(() => {
+    fetchCampaigns()
+  }, [])
+
+  const fetchCampaigns = async () => {
+    try {
+      setLoading(true)
+      const response = await adminAPI.getCampaigns()
+      if (response?.data?.success) {
+        setCampaigns((response.data.data || []).filter(c => c.campaignType === 'basic'))
+      }
+    } catch (error) {
+      toast.error("Failed to load campaigns")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredCampaigns = useMemo(() => {
     let result = [...campaigns]
@@ -75,14 +95,29 @@ export default function BasicCampaign() {
     return Object.values(filters).filter(value => value !== "" && value !== null && value !== undefined).length
   }, [filters])
 
-  const handleToggleStatus = (sl) => {
-    setCampaigns(campaigns.map(campaign =>
-      campaign.sl === sl ? { ...campaign, status: !campaign.status } : campaign
-    ))
+  const handleToggleStatus = async (id) => {
+    try {
+      const response = await adminAPI.toggleCampaignStatus(id)
+      if (response?.data?.success) {
+        toast.success("Status updated")
+        fetchCampaigns()
+      }
+    } catch (error) {
+      toast.error("Failed to update status")
+    }
   }
 
-  const handleDelete = (sl) => {
-    setCampaigns(campaigns.filter(campaign => campaign.sl !== sl))
+  const handleDelete = async (id) => {
+    try {
+      const response = await adminAPI.deleteCampaign(id)
+      if (response?.data?.success) {
+        toast.success("Campaign deleted")
+        fetchCampaigns()
+        setIsDeleteOpen(false)
+      }
+    } catch (error) {
+      toast.error("Failed to delete campaign")
+    }
   }
 
   const handleEdit = (campaign) => {
@@ -95,20 +130,26 @@ export default function BasicCampaign() {
     setIsAddEditOpen(true)
   }
 
-  const handleSave = (formData) => {
-    if (selectedCampaign) {
-      // Edit existing
-      setCampaigns(campaigns.map(campaign =>
-        campaign.sl === selectedCampaign.sl ? { ...campaign, ...formData } : campaign
-      ))
-    } else {
-      // Add new
-      const newCampaign = {
-        sl: campaigns.length > 0 ? Math.max(...campaigns.map(c => c.sl)) + 1 : 1,
-        ...formData,
-        status: true,
+  const handleSave = async (formData) => {
+    try {
+      const payload = { ...formData, campaignType: 'basic' }
+      if (selectedCampaign) {
+        const response = await adminAPI.updateCampaign(selectedCampaign._id, payload)
+        if (response?.data?.success) {
+          toast.success("Campaign updated")
+          fetchCampaigns()
+          setIsAddEditOpen(false)
+        }
+      } else {
+        const response = await adminAPI.createCampaign(payload)
+        if (response?.data?.success) {
+          toast.success("Campaign created")
+          fetchCampaigns()
+          setIsAddEditOpen(false)
+        }
       }
-      setCampaigns([...campaigns, newCampaign])
+    } catch (error) {
+      toast.error("Failed to save campaign")
     }
   }
 
@@ -310,7 +351,13 @@ export default function BasicCampaign() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
-              {filteredCampaigns.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={Object.values(visibleColumns).filter(v => v).length} className="px-6 py-20 text-center">
+                    <p className="text-lg font-semibold text-slate-700 mb-1">Loading...</p>
+                  </td>
+                </tr>
+              ) : filteredCampaigns.length === 0 ? (
                 <tr>
                   <td colSpan={Object.values(visibleColumns).filter(v => v).length} className="px-6 py-20 text-center">
                     <p className="text-lg font-semibold text-slate-700 mb-1">No Data Found</p>
@@ -318,14 +365,14 @@ export default function BasicCampaign() {
                   </td>
                 </tr>
               ) : (
-                filteredCampaigns.map((campaign) => (
+                filteredCampaigns.map((campaign, index) => (
                   <tr
-                    key={campaign.sl}
+                    key={campaign._id}
                     className="hover:bg-slate-50 transition-colors"
                   >
                     {visibleColumns.si && (
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-slate-700">{campaign.sl}</span>
+                        <span className="text-sm font-medium text-slate-700">{index + 1}</span>
                       </td>
                     )}
                     {visibleColumns.title && (
@@ -348,7 +395,7 @@ export default function BasicCampaign() {
                     {visibleColumns.status && (
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
-                          onClick={() => handleToggleStatus(campaign.sl)}
+                          onClick={() => handleToggleStatus(campaign._id)}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                             campaign.status ? "bg-blue-600" : "bg-slate-300"
                           }`}
@@ -402,7 +449,7 @@ export default function BasicCampaign() {
         isOpen={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
         campaign={selectedCampaign}
-        onConfirm={handleDelete}
+        onConfirm={() => handleDelete(selectedCampaign._id)}
       />
 
       {/* Filter Panel */}

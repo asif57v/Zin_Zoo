@@ -1558,16 +1558,17 @@ export async function listOrdersAdmin(query) {
   if (rawStatus && rawStatus !== "all") {
     switch (rawStatus) {
       case "pending":
-        filter.orderStatus = { $in: ["created", "confirmed"] };
+        filter.orderStatus = { $in: ["created", "confirmed", "pending_payment", "pending"] };
         break;
       case "accepted":
-        filter.orderStatus = "confirmed";
+        filter.orderStatus = { $in: ["accepted", "confirmed"] };
         break;
       case "processing":
-        filter.orderStatus = { $in: ["preparing", "ready_for_pickup"] };
+        filter.orderStatus = { $in: ["preparing", "processing"] };
         break;
+      case "out-for-delivery":
       case "food-on-the-way":
-        filter.orderStatus = "picked_up";
+        filter.orderStatus = { $in: ["picked_up", "out_for_delivery"] };
         break;
       case "delivered":
         filter.orderStatus = "delivered";
@@ -1576,6 +1577,8 @@ export async function listOrdersAdmin(query) {
       case "cancelled":
         filter.orderStatus = {
           $in: [
+            "cancelled",
+            "canceled",
             "cancelled_by_user",
             "cancelled_by_restaurant",
             "cancelled_by_admin",

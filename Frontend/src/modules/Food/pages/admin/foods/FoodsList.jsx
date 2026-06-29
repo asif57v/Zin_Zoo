@@ -37,6 +37,7 @@ const createFoodForm = () => ({
   foodType: "Non-Veg",
   isAvailable: true,
   preparationTime: "",
+  zoneId: "global",
 })
 
 const createVariantDraft = (variant = {}) => ({
@@ -72,6 +73,8 @@ export default function FoodsList() {
   const [categoryOptions, setCategoryOptions] = useState([])
   const [categorySearch, setCategorySearch] = useState("")
   const [categoryPopoverOpen, setCategoryPopoverOpen] = useState(false)
+  const [zones, setZones] = useState([])
+  const [zonesLoading, setZonesLoading] = useState(false)
   const [selectedImageFile, setSelectedImageFile] = useState(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
@@ -265,7 +268,7 @@ export default function FoodsList() {
     setEditingFood(null)
     setFoodForm({
       ...createFoodForm(),
-      restaurantId: selectedRestaurant !== "all" ? selectedRestaurant : "",
+      restaurantId: selectedRestaurant !== "all" ? selectedRestaurant : (restaurantOptions[0]?.id || ""),
     })
     setSelectedImageFile(null)
     setImagePreviewUrl("")
@@ -282,6 +285,7 @@ export default function FoodsList() {
       restaurantId: String(food.restaurantId || ""),
       categoryId: String(food.categoryId || ""),
       categoryName: String(food.categoryName || ""),
+      zoneId: String(food.zoneId || "global"),
       name: String(food.name || ""),
       price: String(food.price || ""),
       variants: getFoodVariants(food).map(createVariantDraft),
@@ -321,6 +325,17 @@ export default function FoodsList() {
           setCategoryOptions([])
         }
       }
+
+      try {
+        setZonesLoading(true)
+        const zonesRes = await adminAPI.getZones({ limit: 1000 })
+        const zonesList = zonesRes?.data?.data?.zones || zonesRes?.data?.data?.data?.zones || zonesRes?.data?.data || []
+        if (!cancelled) setZones(Array.isArray(zonesList) ? zonesList : [])
+      } catch (error) {
+        if (!cancelled) setZones([])
+      } finally {
+        if (!cancelled) setZonesLoading(false)
+      }
     }
 
     loadCategoryOptions()
@@ -357,10 +372,7 @@ export default function FoodsList() {
 
   const handleFoodFormSubmit = async () => {
     if (!ensureActionAccess(foodFormMode === "edit" ? "edit" : "create")) return
-    if (!foodForm.restaurantId) {
-      toast.error("Please select a restaurant")
-      return
-    }
+
     if (!String(foodForm.categoryName || "").trim()) {
       toast.error("Please select or enter a category")
       return
@@ -411,9 +423,9 @@ export default function FoodsList() {
       }
 
       const payload = {
-        restaurantId: foodForm.restaurantId,
         categoryId: foodForm.categoryId || undefined,
         categoryName: String(foodForm.categoryName || "").trim(),
+        zoneId: foodForm.zoneId === "global" ? undefined : (foodForm.zoneId || undefined),
         name: foodForm.name.trim(),
         price: hasVariants ? undefined : parsedPrice,
         variants: normalizedVariants.map((variant) => ({
@@ -518,18 +530,6 @@ export default function FoodsList() {
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             </div>
-            <select
-              value={selectedRestaurant}
-              onChange={(e) => setSelectedRestaurant(e.target.value)}
-              className="px-4 py-2.5 min-w-[220px] text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400"
-            >
-              <option value="all">All Restaurants</option>
-              {restaurantOptions.map((restaurant) => (
-                <option key={restaurant.id} value={restaurant.id}>
-                  {restaurant.name}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
       </div>
@@ -549,9 +549,7 @@ export default function FoodsList() {
                 <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                   Title
                 </th>
-                <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                  Restaurant
-                </th>
+
                 <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                   Category
                 </th>
@@ -607,11 +605,7 @@ export default function FoodsList() {
                         <span className="text-sm font-medium text-slate-900">{food.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-slate-800">{food.restaurantName || "-"}</span>
-                      </div>
-                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-slate-800">{food.categoryName || "-"}</span>
@@ -728,11 +722,10 @@ export default function FoodsList() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm bg-slate-50 border border-slate-200 rounded-lg p-4">
-                <p><span className="font-semibold text-slate-700">Restaurant:</span> <span className="text-slate-900">{selectedFood.restaurantName || "-"}</span></p>
+
                 <p><span className="font-semibold text-slate-700">Price:</span> <span className="text-slate-900">{selectedFood.variants?.length ? `Starting from \u20B9${selectedFood.price}` : `\u20B9${selectedFood.price}`}</span></p>
                 <p><span className="font-semibold text-slate-700">Category:</span> <span className="text-slate-900">{selectedFood.categoryName || "-"}</span></p>
                 <p><span className="font-semibold text-slate-700">Food Type:</span> <span className="text-slate-900">{selectedFood.foodType || "-"}</span></p>
-                <p><span className="font-semibold text-slate-700">Approval:</span> <span className="text-slate-900 capitalize">{selectedFood.approvalStatus || "-"}</span></p>
               </div>
               {selectedFood.variants?.length ? (
                 <div className="rounded-lg border border-slate-200 bg-white p-4">
@@ -780,7 +773,7 @@ export default function FoodsList() {
           </DialogHeader>
           <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <div className="hidden">
                 <label className="block text-sm font-medium text-slate-700 mb-1">Restaurant</label>
                 <select
                   value={foodForm.restaurantId}
@@ -847,6 +840,22 @@ export default function FoodsList() {
                     </div>
                   </PopoverContent>
                 </Popover>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Zone</label>
+                <select
+                  value={foodForm.zoneId}
+                  onChange={(e) => setFoodForm((prev) => ({ ...prev, zoneId: e.target.value }))}
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:border-slate-900"
+                >
+                  <option value="global">Global (all zones)</option>
+                  {zonesLoading && <option value="" disabled>Loading zones...</option>}
+                  {zones.map((zone) => {
+                    const id = String(zone?._id || zone?.id || "")
+                    const label = zone?.name || zone?.zoneName || zone?.serviceLocation || id
+                    return <option key={id} value={id}>{label}</option>
+                  })}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Food Name</label>

@@ -8,6 +8,8 @@ export const ADMIN_PERMISSION_SECTIONS = [
   "food_management",
   "restaurant_management",
   "order_management",
+  "service_management",
+  "grocery_management",
   "promotions_management",
   "referral_rewards",
   "customer_management",
@@ -37,6 +39,12 @@ const PATH_PREFIX_TO_SECTION = [
   { prefix: "/admin/food/restaurants", section: "restaurant_management" },
   { prefix: "/admin/food/orders", section: "order_management" },
   { prefix: "/admin/food/order-detect-delivery", section: "order_management" },
+  { prefix: "/admin/food/services", section: "service_management" },
+  { prefix: "/admin/food/service-categories", section: "service_management" },
+  { prefix: "/admin/food/bookings", section: "service_management" },
+  { prefix: "/admin/food/grocery-products", section: "grocery_management" },
+  { prefix: "/admin/food/grocery-categories", section: "grocery_management" },
+  { prefix: "/admin/food/grocery-orders", section: "grocery_management" },
   { prefix: "/admin/food/coupons", section: "promotions_management" },
   { prefix: "/admin/food/referral-settings", section: "referral_rewards" },
   { prefix: "/admin/food/customers", section: "customer_management" },
@@ -69,7 +77,12 @@ const ALWAYS_ALLOWED_FOR_SUB_ADMIN = new Set([
 
 export function isSuperAdmin(adminUser) {
   const type = String(adminUser?.adminType || "").trim().toLowerCase();
-  return type === "super_admin";
+  if (type === "super_admin" || type === "admin") return true;
+  // Fallback: if adminType is missing but role is ADMIN, treat as super admin
+  // This handles legacy admin accounts created before adminType was added
+  const role = String(adminUser?.role || "").trim().toUpperCase();
+  if (!type && role === "ADMIN") return true;
+  return false;
 }
 
 export function getAdminPermissions(adminUser) {

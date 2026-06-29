@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import api from "@food/api"
-import { API_ENDPOINTS } from "@food/api/config"
+import { adminAPI } from "@food/api"
 import { Textarea } from "@food/components/ui/textarea"
 import { legalHtmlToPlainText, plainTextToLegalHtml } from "@food/utils/legalContentFormat"
 const debugError = (...args) => {}
@@ -37,8 +36,8 @@ export default function SupportCMS() {
   const fetchSupportData = async () => {
     try {
       setLoading(true)
-      const response = await api.get(`${API_ENDPOINTS.ADMIN.SUPPORT}?module=${selectedModule}`, { contextModule: "admin" })
-      if (response.data.success && response.data.data) {
+      const response = await adminAPI.getPageContent('support', { module: selectedModule })
+      if (response?.data?.success && response?.data?.data) {
         // Convert HTML to plain text for textarea
         const content = response.data.data.content || ''
         const textContent = legalHtmlToPlainText(content)
@@ -88,18 +87,14 @@ export default function SupportCMS() {
       // Convert plain text/markdown to HTML for storage + user rendering
       const htmlContent = plainTextToLegalHtml(supportData.content)
       
-      const response = await api.put(
-        API_ENDPOINTS.ADMIN.SUPPORT,
-        { 
-          title: supportData.title, 
-          content: htmlContent,
-          email,
-          mobile,
-          module: selectedModule
-        },
-        { contextModule: "admin" }
-      )
-      if (response.data.success) {
+      const response = await adminAPI.updatePageContent('support', { 
+        title: supportData.title, 
+        email: supportData.email,
+        mobile: supportData.mobile,
+        content: htmlContent,
+        module: selectedModule
+      })
+      if (response?.data?.success) {
         toast.success('Support content updated successfully')
         // Convert HTML to plain text for display in textarea
         const content = response.data.data.content || ''

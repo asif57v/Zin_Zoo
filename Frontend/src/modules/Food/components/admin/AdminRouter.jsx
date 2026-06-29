@@ -9,37 +9,27 @@ import { canAccessFeatureSettings, canAccessSuperPowers } from "@food/utils/admi
 import { adminAPI } from "@/services/api";
 
 const AdminHome = lazy(() => import("@food/pages/admin/AdminHome"));
-const PointOfSale = lazy(() => import("@food/pages/admin/PointOfSale"));
 const AdminProfile = lazy(() => import("@food/pages/admin/AdminProfile"));
 const AdminSettings = lazy(() => import("@food/pages/admin/AdminSettings"));
 const NewRefundRequests = lazy(() => import("@food/pages/admin/refunds/NewRefundRequests"));
-const FoodApproval = () => null;
 const OrdersPage = lazy(() => import("@food/pages/admin/orders/OrdersPage"));
+const GlobalOrdersPage = lazy(() => import("@food/pages/admin/orders/GlobalOrdersPage"));
 const OrderDetectDelivery = () => null;
 const Category = lazy(() => import("@food/pages/admin/categories/Category"));
+const GroceryCategory = lazy(() => import("@food/pages/admin/grocery/GroceryCategory"));
+const GroceryProductsList = lazy(() => import("@food/pages/admin/grocery/GroceryProductsList"));
+const GroceryOrdersPage = lazy(() => import("@food/pages/admin/grocery/GroceryOrdersPage"));
 const FeeSettings = lazy(() => import("@food/pages/admin/fee-settings/FeeSettings"));
 const ReferralSettings = lazy(() => import("@food/pages/admin/referral-settings/ReferralSettings"));
-// Restaurant Management
-const ZoneSetup = () => null;
-const AddZone = () => null;
-const ViewZone = () => null;
-const AllZonesMap = () => null;
-const DeliveryBoyViewMap = () => null;
-const RestaurantsList = () => null;
-const AddRestaurant = () => null;
-const JoiningRequest = () => null;
-const UnregisteredRestaurants = () => null;
-const RestaurantCommission = () => null;
-const RestaurantComplaints = () => null;
-const RestaurantReviews = () => null;
-const RestaurantsBulkImport = () => null;
-const RestaurantsBulkExport = () => null;
-const SubscriptionSettings = () => null;
-const SubscriptionHistory = () => null;
-const RestaurantSettings = () => null;
 // Food Management
 const FoodsList = lazy(() => import("@food/pages/admin/foods/FoodsList"));
 const AddonsList = lazy(() => import("@food/pages/admin/addons/AddonsList"));
+
+// Services Management
+const ServicesList = lazy(() => import("@food/pages/admin/services/ServicesList"));
+const ServiceCategories = lazy(() => import("@food/pages/admin/services/ServiceCategories"));
+const BookingsList = lazy(() => import("@food/pages/admin/services/BookingsList"));
+
 // Promotions Management
 const BasicCampaign = lazy(() => import("@food/pages/admin/campaigns/BasicCampaign"));
 const FoodCampaign = lazy(() => import("@food/pages/admin/campaigns/FoodCampaign"));
@@ -62,25 +52,6 @@ const AddFund = lazy(() => import("@food/pages/admin/wallet/AddFund"));
 const Bonus = lazy(() => import("@food/pages/admin/wallet/Bonus"));
 const LoyaltyPointReport = lazy(() => import("@food/pages/admin/loyalty-point/Report"));
 const SubscribedMailList = lazy(() => import("@food/pages/admin/SubscribedMailList"));
-// Deliveryman Management
-const DeliveryBoyCommission = () => null;
-const DeliveryCashLimit = () => null;
-const CashLimitSettlement = () => null;
-const DeliveryWithdrawal = () => null;
-const DeliveryBoyWallet = () => null;
-const DeliveryEmergencyHelp = () => null;
-const DeliverySupportTickets = () => null;
-const OrderReassignmentRequests = () => null;
-const JoinRequest = () => null;
-const AddDeliveryman = () => null;
-const DeliverymanList = () => null;
-const DeliveryLiveTracking = () => null;
-const DeliverymanReviews = () => null;
-const DeliverymanBonus = () => null;
-const EarningAddon = () => null;
-const EarningAddonHistory = () => null;
-const DeliveryEarnings = () => null;
-// Disbursement Management
 // Report Management
 const TransactionReport = lazy(() => import("@food/pages/admin/reports/TransactionReport"));
 const ExpenseReport = lazy(() => import("@food/pages/admin/reports/ExpenseReport"));
@@ -135,9 +106,7 @@ const ReactSite = lazy(() => import("@food/pages/admin/system/ReactSite"));
 const CleanDatabase = lazy(() => import("@food/pages/admin/system/CleanDatabase"));
 const AddonActivation = lazy(() => import("@food/pages/admin/system/AddonActivation"));
 const LandingPageManagement = lazy(() => import("@food/pages/admin/system/LandingPageManagement"));
-// import DiningManagement from "@food/pages/admin/system/DiningManagement");
-// import DiningList from "@food/pages/admin/system/DiningList");
-const EditRestaurant = () => null;
+// Dining Admin Removed
 const AdminLogin = lazy(() => import("@food/pages/admin/auth/AdminLogin"));
 const AdminSignup = lazy(() => import("@food/pages/admin/auth/AdminSignup"));
 const AdminForgotPassword = lazy(() => import("@food/pages/admin/auth/AdminForgotPassword"));
@@ -235,9 +204,11 @@ export default function AdminRouter() {
           {/* FOOD ADMIN - All food related routes nested here */}
           <Route path="food/*">
             <Route index element={<AdminHome />} />
-            <Route path="point-of-sale" element={<PointOfSale />} />
             <Route path="profile" element={<AdminProfile />} />
             <Route path="settings" element={<AdminSettings />} />
+            
+            {/* GLOBAL ORDERS */}
+            <Route path="global-orders/:status" element={<GlobalOrdersPage />} />
             
             {/* ORDER MANAGEMENT */}
             <Route path="orders/all" element={<OrdersPage statusKey="all" />} />
@@ -245,37 +216,14 @@ export default function AdminRouter() {
             <Route path="orders/pending" element={<OrdersPage statusKey="pending" />} />
             <Route path="orders/accepted" element={<OrdersPage statusKey="accepted" />} />
             <Route path="orders/processing" element={<OrdersPage statusKey="processing" />} />
-            <Route path="orders/food-on-the-way" element={<OrdersPage statusKey="food-on-the-way" />} />
+            <Route path="orders/out-for-delivery" element={<OrdersPage statusKey="out-for-delivery" />} />
             <Route path="orders/delivered" element={<OrdersPage statusKey="delivered" />} />
             <Route path="orders/canceled" element={<OrdersPage statusKey="canceled" />} />
-            <Route path="orders/restaurant-cancelled" element={<OrdersPage statusKey="restaurant-cancelled" />} />
             <Route path="orders/payment-failed" element={<OrdersPage statusKey="payment-failed" />} />
             <Route path="orders/refunded" element={<OrdersPage statusKey="refunded" />} />
             <Route path="orders/offline-payments" element={<OrdersPage statusKey="offline-payments" />} />
             <Route path="order-detect-delivery" element={<OrderDetectDelivery />} />
             <Route path="order-refunds/new" element={<NewRefundRequests />} />
-
-            {/* RESTAURANT MANAGEMENT */}
-            <Route path="zone-setup" element={<ZoneSetup />} />
-            <Route path="zone-setup/map" element={<AllZonesMap />} />
-            <Route path="zone-setup/delivery-boy-view" element={<DeliveryBoyViewMap />} />
-            <Route path="zone-setup/add" element={<AddZone />} />
-            <Route path="zone-setup/edit/:id" element={<AddZone />} />
-            <Route path="zone-setup/view/:id" element={<ViewZone />} />
-            <Route path="food-approval" element={<FoodApproval />} />
-            <Route path="restaurants" element={<RestaurantsList />} />
-            <Route path="restaurants/add" element={<AddRestaurant />} />
-            <Route path="restaurants/edit/:id" element={<EditRestaurant />} />
-            <Route path="restaurants/joining-request" element={<JoiningRequest />} />
-            <Route path="restaurants/unregistered" element={<UnregisteredRestaurantsRouteGuard />} />
-            <Route path="restaurants/commission" element={<RestaurantCommission />} />
-            <Route path="restaurants/complaints" element={<RestaurantComplaints />} />
-            <Route path="restaurants/reviews" element={<RestaurantReviews />} />
-            <Route path="restaurants/bulk-import" element={<RestaurantsBulkImport />} />
-            <Route path="restaurants/bulk-export" element={<RestaurantsBulkExport />} />
-            <Route path="restaurants/settings" element={<RestaurantSettings />} />
-            <Route path="restaurants/subscription-settings" element={<SubscriptionSettings />} />
-            <Route path="restaurants/subscription-history" element={<SubscriptionHistory />} />
 
             {/* FOOD & CATEGORY MANAGEMENT */}
             <Route path="categories" element={<Category />} />
@@ -283,24 +231,26 @@ export default function AdminRouter() {
             <Route path="referral-settings" element={<ReferralSettings />} />
             <Route path="foods" element={<FoodsList />} />
             <Route path="food/list" element={<FoodsList />} />
-            <Route path="addons" element={<AddonsList />} />
 
             {/* GROCERY MANAGEMENT */}
             <Route path="grocery-product-approval" element={<AdminServicePlaceholder title="Product Approval" />} />
-            <Route path="grocery-products" element={<AdminServicePlaceholder title="Products List" />} />
-            <Route path="grocery-orders/all" element={<AdminServicePlaceholder title="All Orders" />} />
-            <Route path="grocery-orders/pending" element={<AdminServicePlaceholder title="Pending Orders" />} />
-            <Route path="grocery-orders/delivered" element={<AdminServicePlaceholder title="Delivered Orders" />} />
-            <Route path="grocery-categories" element={<AdminServicePlaceholder title="Grocery Categories" />} />
+            <Route path="grocery-products" element={<GroceryProductsList />} />
+            <Route path="grocery-orders/all" element={<GroceryOrdersPage statusKey="all" />} />
+            <Route path="grocery-orders/pending" element={<GroceryOrdersPage statusKey="pending" />} />
+            <Route path="grocery-orders/accepted" element={<GroceryOrdersPage statusKey="accepted" />} />
+            <Route path="grocery-orders/processing" element={<GroceryOrdersPage statusKey="processing" />} />
+            <Route path="grocery-orders/out-for-delivery" element={<GroceryOrdersPage statusKey="out-for-delivery" />} />
+            <Route path="grocery-orders/delivered" element={<GroceryOrdersPage statusKey="delivered" />} />
+            <Route path="grocery-orders/canceled" element={<GroceryOrdersPage statusKey="canceled" />} />
+            <Route path="grocery-categories" element={<GroceryCategory />} />
 
             {/* SERVICE MANAGEMENT */}
-            <Route path="service-approval" element={<AdminServicePlaceholder title="Service Approval" />} />
-            <Route path="services" element={<AdminServicePlaceholder title="Services List" />} />
+            <Route path="services" element={<ServicesList />} />
             <Route path="service-addons" element={<AdminServicePlaceholder title="Service Addons List" />} />
-            <Route path="bookings/all" element={<AdminServicePlaceholder title="All Bookings" />} />
-            <Route path="bookings/pending" element={<AdminServicePlaceholder title="Pending Bookings" />} />
-            <Route path="bookings/completed" element={<AdminServicePlaceholder title="Completed Bookings" />} />
-            <Route path="service-categories" element={<AdminServicePlaceholder title="Service Categories" />} />
+            <Route path="bookings/all" element={<BookingsList statusFilter="all" />} />
+            <Route path="bookings/pending" element={<BookingsList statusFilter="pending" />} />
+            <Route path="bookings/completed" element={<BookingsList statusFilter="completed" />} />
+            <Route path="service-categories" element={<ServiceCategories />} />
 
             {/* PROMOTIONS, CUSTOMERS, DELIVERYMEN, etc. */}
             <Route path="campaigns/basic" element={<BasicCampaign />} />
@@ -323,24 +273,6 @@ export default function AdminRouter() {
             <Route path="wallet/bonus" element={<Bonus />} />
             <Route path="loyalty-point/report" element={<LoyaltyPointReport />} />
             <Route path="subscribed-mail-list" element={<SubscribedMailList />} />
-
-            <Route path="delivery-boy-commission" element={<DeliveryBoyCommission />} />
-            <Route path="delivery-cash-limit" element={<DeliveryCashLimit />} />
-            <Route path="cash-limit-settlement" element={<CashLimitSettlement />} />
-            <Route path="delivery-withdrawal" element={<DeliveryWithdrawal />} />
-            <Route path="delivery-boy-wallet" element={<DeliveryBoyWallet />} />
-            <Route path="delivery-emergency-help" element={<DeliveryEmergencyHelp />} />
-            <Route path="delivery-support-tickets" element={<DeliverySupportTickets />} />
-            <Route path="delivery-order-reassignment-requests" element={<OrderReassignmentRequests />} />
-            <Route path="delivery-partners" element={<DeliverymanList />} />
-            <Route path="delivery-partners/add" element={<AddDeliveryman />} />
-            <Route path="delivery-partners/live-tracking" element={<DeliveryLiveTracking />} />
-            <Route path="delivery-partners/join-request" element={<JoinRequest />} />
-            <Route path="delivery-partners/reviews" element={<DeliverymanReviews />} />
-            <Route path="delivery-partners/bonus" element={<DeliverymanBonus />} />
-            <Route path="delivery-partners/earning-addon" element={<EarningAddon />} />
-            <Route path="delivery-partners/earning-addon-history" element={<EarningAddonHistory />} />
-            <Route path="delivery-partners/earnings" element={<DeliveryEarnings />} />
 
             {/* REPORTS & SETTINGS */}
             <Route path="transaction-report" element={<TransactionReport />} />
@@ -398,8 +330,7 @@ export default function AdminRouter() {
             <Route path="clean-database" element={<CleanDatabase />} />
             <Route path="addon-activation" element={<AddonActivation />} />
             <Route path="hero-banner-management" element={<LandingPageManagement />} />
-            {/* <Route path="dining-management" element={<DiningManagement />} /> */}
-            {/* <Route path="dining-list" element={<DiningList />} /> */}
+            {/* Dining Management Removed */}
           </Route>
 
           {/* TAXI ADMIN - Placeholder for future implementation */}

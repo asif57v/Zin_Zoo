@@ -422,6 +422,21 @@ export async function rejectOrderAdminController(req, res, next) {
     }
 }
 
+export async function updateOrderStatusAdminController(req, res, next) {
+    try {
+        const adminId = req.user?.userId;
+        const orderId = req.params.orderId;
+        const { orderStatus, note } = req.body;
+        if (!orderStatus) {
+            return sendResponse(res, 400, 'Order status is required');
+        }
+        const order = await orderService.updateOrderStatusAdmin(orderId, orderStatus, note || `Status updated to ${orderStatus} by admin`, adminId);
+        return sendResponse(res, 200, `Order status updated to ${orderStatus}`, { order });
+    } catch (err) {
+        next(err);
+    }
+}
+
 export async function processRefundAdminController(req, res, next) {
     try {
         const adminId = req.user?.userId;

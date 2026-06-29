@@ -5,36 +5,37 @@ export const adminSidebarMenu = [
     path: "/admin/food",
     icon: "LayoutDashboard",
   },
-  {
-    type: "link",
-    label: "Point of Sale",
-    path: "/admin/food/point-of-sale",
-    icon: "CreditCard",
-  },
+
   {
     type: "section",
     label: "FOOD MANAGEMENT",
     items: [
+
       {
         type: "link",
-        label: "Food Approval",
-        path: "/admin/food/food-approval",
-        icon: "CheckCircle2",
-      },
-      {
-        type: "expandable",
-        label: "Foods",
+        label: "Foods List",
         icon: "Utensils",
-        subItems: [
-          { label: "Restaurant Foods List", path: "/admin/food/foods" },
-          { label: "Restaurant Addons List", path: "/admin/food/addons" },
-        ],
+        path: "/admin/food/foods",
       },
       {
         type: "link",
         label: "Categories",
         icon: "FolderTree",
         path: "/admin/food/categories",
+      },
+      {
+        type: "expandable",
+        label: "Orders",
+        icon: "FileText",
+        subItems: [
+          { label: "All Orders", path: "/admin/food/orders/all" },
+          { label: "Pending Orders", path: "/admin/food/orders/pending" },
+          { label: "Accepted Orders", path: "/admin/food/orders/accepted" },
+          { label: "Processing Orders", path: "/admin/food/orders/processing" },
+          { label: "Out For Delivery", path: "/admin/food/orders/out-for-delivery" },
+          { label: "Delivered Orders", path: "/admin/food/orders/delivered" },
+          { label: "Canceled Orders", path: "/admin/food/orders/canceled" },
+        ],
       },
     ],
   },
@@ -52,12 +53,16 @@ export const adminSidebarMenu = [
       },
       {
         type: "expandable",
-        label: "Orders",
+        label: "Grocery Orders",
         icon: "FileText",
         subItems: [
           { label: "All Orders", path: "/admin/food/grocery-orders/all" },
           { label: "Pending Orders", path: "/admin/food/grocery-orders/pending" },
+          { label: "Accepted Orders", path: "/admin/food/grocery-orders/accepted" },
+          { label: "Processing Orders", path: "/admin/food/grocery-orders/processing" },
+          { label: "Out For Delivery", path: "/admin/food/grocery-orders/out-for-delivery" },
           { label: "Delivered Orders", path: "/admin/food/grocery-orders/delivered" },
+          { label: "Canceled Orders", path: "/admin/food/grocery-orders/canceled" },
         ],
       },
       {
@@ -72,19 +77,13 @@ export const adminSidebarMenu = [
     type: "section",
     label: "SERVICE MANAGEMENT",
     items: [
-      {
-        type: "link",
-        label: "Service Approval",
-        path: "/admin/food/service-approval",
-        icon: "CheckCircle2",
-      },
+
       {
         type: "expandable",
         label: "Services",
         icon: "Briefcase",
         subItems: [
           { label: "Services List", path: "/admin/food/services" },
-          { label: "Service Addons List", path: "/admin/food/service-addons" },
         ],
       },
       {
@@ -149,41 +148,10 @@ export const adminSidebarMenu = [
         path: "/admin/food/customers",
         icon: "Users",
       },
-      {
-        type: "link",
-        label: "Support Tickets (User & Restaurant)",
-        path: "/admin/food/support-tickets",
-        icon: "MessageSquare",
-      },
     ],
   },
   // {
-  //   type: "section",
-  //   label: "DELIVERYMAN MANAGEMENT",
-  //   items: [
-  //     { type: "link", label: "Delivery & Platform Fee", path: "/admin/food/fee-settings", icon: "DollarSign" },
-  //     { type: "link", label: "Delivery Withdrawal", path: "/admin/food/delivery-withdrawal", icon: "Wallet" },
-  //     { type: "link", label: "Delivery boy Wallet", path: "/admin/food/delivery-boy-wallet", icon: "PiggyBank" },
-  //     { type: "link", label: "Delivery Emergency Help", path: "/admin/food/delivery-emergency-help", icon: "Phone" },
-  //     { type: "link", label: "Delivery Support Tickets", path: "/admin/food/delivery-support-tickets", icon: "MessageSquare" },
-  //     { type: "link", label: "Order Reassignment Requests", path: "/admin/food/delivery-order-reassignment-requests", icon: "AlertTriangle" },
-  //     {
-  //       type: "expandable",
-  //       label: "Deliveryman",
-  //       icon: "Package",
-  //       subItems: [
-  //         { label: "New Join Request", path: "/admin/food/delivery-partners/join-request" },
-  //         { label: "Deliveryman List", path: "/admin/food/delivery-partners" },
-  //         { label: "Live Tracking", path: "/admin/food/delivery-partners/live-tracking" },
-  //         { label: "Deliveryman Reviews", path: "/admin/food/delivery-partners/reviews" },
-  //         { label: "Bonus", path: "/admin/food/delivery-partners/bonus" },
-  //         { label: "Earning Addon", path: "/admin/food/delivery-partners/earning-addon" },
-  //         { label: "Earning Addon History", path: "/admin/food/delivery-partners/earning-addon-history" },
-  //         { label: "Delivery Earning", path: "/admin/food/delivery-partners/earnings" },
-  //       ],
-  //     },
-  //   ],
-  // },
+
   {
     type: "section",
     label: "HELP & SUPPORT",

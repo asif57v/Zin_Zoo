@@ -1,15 +1,17 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Search, Settings, MoreVertical, Building2, Download, ChevronDown, Filter, FileDown, FileSpreadsheet, FileText, Code, Eye, CheckCircle2, XCircle } from "lucide-react"
-import { emptyAdRequests } from "@food/utils/adminFallbackData"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@food/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@food/components/ui/dialog"
 import SettingsDialog from "@food/components/admin/orders/SettingsDialog"
 import { exportAdvertisementsToCSV, exportAdvertisementsToExcel, exportAdvertisementsToPDF, exportAdvertisementsToJSON } from "@food/components/admin/advertisements/advertisementsExportUtils"
+import { adminAPI } from "@food/api"
+import { toast } from "sonner"
 
 export default function AdRequests() {
   const [activeTab, setActiveTab] = useState("new")
   const [searchQuery, setSearchQuery] = useState("")
-  const [requests, setRequests] = useState(emptyAdRequests)
+  const [requests, setRequests] = useState([])
+  const [loading, setLoading] = useState(false)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isViewOpen, setIsViewOpen] = useState(false)
@@ -38,36 +40,54 @@ export default function AdRequests() {
     actions: "Actions",
   }
 
+  useEffect(() => {
+    fetchRequests()
+  }, [])
+
+  const fetchRequests = async () => {
+    try {
+      setLoading(true)
+      const response = await adminAPI.getAdvertisements()
+      if (response?.data?.success) {
+        setRequests(response.data.data || [])
+      }
+    } catch (error) {
+      toast.error("Failed to load advertisement requests")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const filteredRequests = useMemo(() => {
     let result = [...requests]
     
     // Filter by tab
     if (activeTab === "new") {
-      result = result.filter(r => r.status === "new" || !r.status)
+      result = result.filter(r => r.status === "pending" || !r.status)
     } else if (activeTab === "update") {
-      result = result.filter(r => r.status === "update")
+      result = result.filter(r => r.status === "approved" || r.status === "update") // In a real system you'd have an update state
     } else if (activeTab === "denied") {
-      result = result.filter(r => r.status === "denied")
+      result = result.filter(r => r.status === "rejected" || r.status === "denied")
     }
     
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
       result = result.filter(request =>
-        request.adsId?.toLowerCase().includes(query) ||
-        request.restaurantName?.toLowerCase().includes(query) ||
-        request.adsTitle?.toLowerCase().includes(query)
+        request._id?.toLowerCase().includes(query) ||
+        request.restaurant?.toLowerCase().includes(query) ||
+        request.title?.toLowerCase().includes(query)
       )
     }
     
     // Filter by ads type
     if (filters.adsType) {
-      result = result.filter(r => r.adsType === filters.adsType)
+      result = result.filter(r => r.advertisementType === filters.adsType)
     }
     
     // Filter by restaurant
     if (filters.restaurant) {
-      result = result.filter(r => r.restaurantName === filters.restaurant)
+      result = result.filter(r => r.restaurant === filters.restaurant)
     }
     
     return result
@@ -100,16 +120,28 @@ export default function AdRequests() {
     setIsViewOpen(true)
   }
 
-  const handleApprove = (sl) => {
-    setRequests(requests.map(r => 
-      r.sl === sl ? { ...r, status: "approved" } : r
-    ))
+  const handleApprove = async (id) => {
+    try {
+      const response = await adminAPI.updateAdvertisementStatus(id, { status: "approved" })
+      if (response?.data?.success) {
+        toast.success("Request approved")
+        fetchRequests()
+      }
+    } catch (error) {
+      toast.error("Failed to approve request")
+    }
   }
 
-  const handleDeny = (sl) => {
-    setRequests(requests.map(r => 
-      r.sl === sl ? { ...r, status: "denied" } : r
-    ))
+  const handleDeny = async (id) => {
+    try {
+      const response = await adminAPI.updateAdvertisementStatus(id, { status: "rejected" })
+      if (response?.data?.success) {
+        toast.success("Request denied")
+        fetchRequests()
+      }
+    } catch (error) {
+      toast.error("Failed to deny request")
+    }
   }
 
   const toggleColumn = (key) => {
@@ -139,8 +171,8 @@ export default function AdRequests() {
     })
   }
 
-  const restaurants = [...new Set(requests.map(r => r.restaurantName))].filter(Boolean)
-  const adsTypes = [...new Set(requests.map(r => r.adsType))].filter(Boolean)
+  const restaurants = [...new Set(requests.map(r => r.restaurant))].filter(Boolean)
+  const adsTypes = [...new Set(requests.map(r => r.advertisementType))].filter(Boolean)
 
   const tabs = [
     { key: "new", label: "New Request" },
@@ -269,7 +301,13 @@ export default function AdRequests() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
-              {filteredRequests.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={Object.values(visibleColumns).filter(v => v).length} className="px-6 py-20 text-center">
+                    <p className="text-lg font-semibold text-slate-700 mb-1">Loading...</p>
+                  </td>
+                </tr>
+              ) : filteredRequests.length === 0 ? (
                 <tr>
                   <td colSpan={Object.values(visibleColumns).filter(v => v).length} className="px-6 py-20 text-center">
                     <p className="text-lg font-semibold text-slate-700 mb-1">No Data Found</p>
@@ -277,24 +315,24 @@ export default function AdRequests() {
                   </td>
                 </tr>
               ) : (
-                filteredRequests.map((request) => (
+                filteredRequests.map((request, index) => (
                   <tr
-                    key={request.sl}
+                    key={request._id}
                     className="hover:bg-slate-50 transition-colors"
                   >
                     {visibleColumns.si && (
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-slate-700">{request.sl}</span>
+                        <span className="text-sm font-medium text-slate-700">{index + 1}</span>
                       </td>
                     )}
                     {visibleColumns.adsId && (
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-slate-900">{request.adsId}</span>
+                        <span className="text-sm font-medium text-slate-900">{request._id.slice(-6).toUpperCase()}</span>
                       </td>
                     )}
                     {visibleColumns.adsTitle && (
                       <td className="px-6 py-4">
-                        <span className="text-sm font-medium text-slate-900">{request.adsTitle}</span>
+                        <span className="text-sm font-medium text-slate-900">{request.title}</span>
                       </td>
                     )}
                     {visibleColumns.restaurantInfo && (
@@ -304,20 +342,19 @@ export default function AdRequests() {
                             <Building2 className="w-5 h-5 text-orange-600" />
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-slate-900">{request.restaurantName}</span>
-                            <span className="text-xs text-slate-500">{request.restaurantEmail}</span>
+                            <span className="text-sm font-medium text-slate-900">{request.restaurant || 'N/A'}</span>
                           </div>
                         </div>
                       </td>
                     )}
                     {visibleColumns.adsType && (
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-slate-700">{request.adsType}</span>
+                        <span className="text-sm text-slate-700">{request.advertisementType}</span>
                       </td>
                     )}
                     {visibleColumns.duration && (
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-slate-700">{request.duration}</span>
+                        <span className="text-sm text-slate-700">{request.validity}</span>
                       </td>
                     )}
                     {visibleColumns.actions && (
@@ -340,14 +377,14 @@ export default function AdRequests() {
                               <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem 
-                                  onClick={() => handleApprove(request.sl)}
+                                  onClick={() => handleApprove(request._id)}
                                   className="cursor-pointer text-emerald-600"
                                 >
                                   <CheckCircle2 className="w-4 h-4 mr-2" />
                                   Approve
                                 </DropdownMenuItem>
                                 <DropdownMenuItem 
-                                  onClick={() => handleDeny(request.sl)}
+                                  onClick={() => handleDeny(request._id)}
                                   className="cursor-pointer text-red-600"
                                 >
                                   <XCircle className="w-4 h-4 mr-2" />
@@ -446,27 +483,23 @@ export default function AdRequests() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Ads ID</p>
-                  <p className="text-sm text-slate-900">{selectedRequest.adsId}</p>
+                  <p className="text-sm text-slate-900">{selectedRequest._id}</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Ads Title</p>
-                  <p className="text-sm text-slate-900">{selectedRequest.adsTitle}</p>
+                  <p className="text-sm text-slate-900">{selectedRequest.title}</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Restaurant Name</p>
-                  <p className="text-sm text-slate-900">{selectedRequest.restaurantName}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-700">Restaurant Email</p>
-                  <p className="text-sm text-slate-900">{selectedRequest.restaurantEmail}</p>
+                  <p className="text-sm text-slate-900">{selectedRequest.restaurant || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Ads Type</p>
-                  <p className="text-sm text-slate-900">{selectedRequest.adsType}</p>
+                  <p className="text-sm text-slate-900">{selectedRequest.advertisementType}</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Duration</p>
-                  <p className="text-sm text-slate-900">{selectedRequest.duration}</p>
+                  <p className="text-sm text-slate-900">{selectedRequest.validity}</p>
                 </div>
               </div>
             </div>

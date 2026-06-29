@@ -1,21 +1,14 @@
 import { useState, useEffect, useMemo } from "react"
-import { Eye, Printer, ArrowUpDown, Loader2, Check, X, Trash2, RefreshCw, Volume2 } from "lucide-react"
+import { Eye, Printer, ArrowUpDown, Loader2, Check, X, Trash2, RefreshCw, Volume2, Package, Truck, CheckCircle2 } from "lucide-react"
 
 const getStatusColor = (orderStatus) => {
   const colors = {
     "Delivered": "bg-emerald-100 text-emerald-700",
-    "Pending": "bg-blue-100 text-blue-700",
-    "Scheduled": "bg-blue-100 text-blue-700",
-    "Accepted": "bg-green-100 text-green-700",
+    "Pending": "bg-amber-100 text-amber-700",
+    "Accepted": "bg-blue-100 text-blue-700",
     "Processing": "bg-orange-100 text-orange-700",
-    "Food On The Way": "bg-yellow-100 text-yellow-700",
+    "Out For Delivery": "bg-purple-100 text-purple-700",
     "Canceled": "bg-rose-100 text-rose-700",
-    "Cancelled by Restaurant": "bg-red-100 text-red-700",
-    "Cancelled by User": "bg-orange-100 text-orange-700",
-    "Payment Failed": "bg-red-100 text-red-700",
-    "Refunded": "bg-sky-100 text-sky-700",
-    "Dine In": "bg-indigo-100 text-indigo-700",
-    "Offline Payments": "bg-slate-100 text-slate-700",
   }
   return colors[orderStatus] || "bg-slate-100 text-slate-700"
 }
@@ -35,6 +28,7 @@ export default function OrdersTable({
   onRefund,
   onDeleteOrder,
   onAcceptOrder,
+  onUpdateStatus,
   onRejectOrder,
   onCancelOrder,
   onDeassignAndResend,
@@ -69,7 +63,7 @@ export default function OrdersTable({
       "pending",
       "accepted",
       "processing",
-      "food on the way",
+      "out for delivery",
     ].includes(currentStatus)
   }
 
@@ -159,14 +153,7 @@ export default function OrdersTable({
                   </div>
                 </th>
               )}
-              {visibleColumns.restaurant && (
-                <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                    <span>Restaurant</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-400 cursor-pointer hover:text-slate-600" />
-                  </div>
-                </th>
-              )}
+
               {visibleColumns.foodItems && (
                 <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider min-w-[200px]">
                   <div className="flex items-center gap-2">
@@ -207,19 +194,7 @@ export default function OrdersTable({
                   </div>
                 </th>
               )}
-              {showAssignedDeliveryPartner && visibleColumns.deliveryPartner !== false && (
-                <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                  <div className="flex items-center gap-2">
-                    <span>Assigned Delivery Partner</span>
-                    <ArrowUpDown className="w-3 h-3 text-slate-400 cursor-pointer hover:text-slate-600" />
-                  </div>
-                </th>
-              )}
-              {visibleColumns.actions && (
-                <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                  &nbsp;
-                </th>
-              )}
+
               {visibleColumns.actions && (
                 <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                   Actions
@@ -263,25 +238,35 @@ export default function OrdersTable({
                     </div>
                   </td>
                 )}
-                {visibleColumns.restaurant && (
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-slate-700">{formatRestaurantName(order.restaurant)}</span>
-                  </td>
-                )}
+
                 {visibleColumns.foodItems && (
                   <td className="px-6 py-4">
-                    <div className="flex flex-col gap-2 min-w-[200px] max-w-md">
+                    <div className="flex flex-col min-w-[200px] max-w-md">
                       {order.items && Array.isArray(order.items) && order.items.length > 0 ? (
                         order.items.map((item, idx) => (
-                          <div key={idx || item.itemId || idx} className="flex items-center gap-2 text-sm">
-                            <span className="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded min-w-[2.5rem] text-center">
-                              {item.quantity || 1}x
-                            </span>
-                            <span className="text-slate-800 font-medium flex-1">
-                              {item.name || item.itemName || item.title || 'Unknown Item'}
-                            </span>
+                          <div key={idx || item.itemId || idx} className="flex items-center justify-between gap-3 text-sm py-1.5 border-b border-slate-100 last:border-0">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              {item.image ? (
+                                <img
+                                  src={item.image}
+                                  alt={item.name || "Item"}
+                                  className="w-8 h-8 rounded-md object-cover border border-slate-200 flex-shrink-0"
+                                  onError={(e) => { e.target.style.display = 'none' }}
+                                />
+                              ) : (
+                                <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                  <Package className="w-3.5 h-3.5 text-slate-400" />
+                                </div>
+                              )}
+                              <span className="font-semibold text-slate-500 min-w-[1.5rem] flex-shrink-0">
+                                {item.quantity || 1}x
+                              </span>
+                              <span className="text-slate-800 font-medium truncate">
+                                {item.name || item.itemName || item.title || 'Unknown Item'}
+                              </span>
+                            </div>
                             {item.price && (
-                              <span className="text-xs text-slate-500">
+                              <span className="text-slate-600 font-medium whitespace-nowrap flex-shrink-0">
                                 ₹{item.price}
                               </span>
                             )}
@@ -389,27 +374,70 @@ export default function OrdersTable({
                     </div>
                   </td>
                 )}
-                {showAssignedDeliveryPartner && visibleColumns.deliveryPartner !== false && (
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {order.deliveryPartnerName ? (
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-slate-800">
-                          {order.deliveryPartnerName}
-                        </span>
-                        <span className="mt-0.5 text-xs text-slate-500">
-                          {order.deliveryPartnerPhone || "Phone not available"}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-sm font-medium text-slate-400">
-                        Not assigned
-                      </span>
-                    )}
-                  </td>
-                )}
+
                 {visibleColumns.actions && (
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-1.5">
+                      {onAcceptOrder && String(order.orderStatus || "").trim().toLowerCase() === "pending" && (
+                        <button
+                          onClick={() => onAcceptOrder(order)}
+                          disabled={actionLoadingOrderId === (order.id || order.orderId)}
+                          className="p-1.5 rounded transition-colors text-emerald-600 hover:bg-emerald-50 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed flex items-center gap-1 border border-emerald-200 bg-emerald-50/50 hover:border-emerald-300"
+                          title="Accept Order"
+                        >
+                          {actionLoadingOrderId === (order.id || order.orderId) ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <><Check className="w-3.5 h-3.5" /><span className="text-[10px] font-semibold">Accept</span></>
+                          )}
+                        </button>
+                      )}
+
+                      {onUpdateStatus && String(order.orderStatus || "").trim().toLowerCase() === "accepted" && (
+                        <button
+                          onClick={() => onUpdateStatus(order, 'preparing')}
+                          disabled={actionLoadingOrderId === (order.id || order.orderId)}
+                          className="p-1.5 rounded transition-colors text-orange-600 hover:bg-orange-50 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed flex items-center gap-1 border border-orange-200 bg-orange-50/50 hover:border-orange-300"
+                          title="Mark Processing"
+                        >
+                          {actionLoadingOrderId === (order.id || order.orderId) ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <><Package className="w-3.5 h-3.5" /><span className="text-[10px] font-semibold">Process</span></>
+                          )}
+                        </button>
+                      )}
+
+                      {onUpdateStatus && String(order.orderStatus || "").trim().toLowerCase() === "processing" && (
+                        <button
+                          onClick={() => onUpdateStatus(order, 'picked_up')}
+                          disabled={actionLoadingOrderId === (order.id || order.orderId)}
+                          className="p-1.5 rounded transition-colors text-blue-600 hover:bg-blue-50 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed flex items-center gap-1 border border-blue-200 bg-blue-50/50 hover:border-blue-300"
+                          title="Mark Out For Delivery"
+                        >
+                          {actionLoadingOrderId === (order.id || order.orderId) ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <><Truck className="w-3.5 h-3.5" /><span className="text-[10px] font-semibold">Dispatch</span></>
+                          )}
+                        </button>
+                      )}
+
+                      {onUpdateStatus && String(order.orderStatus || "").trim().toLowerCase() === "out for delivery" && (
+                        <button
+                          onClick={() => onUpdateStatus(order, 'delivered')}
+                          disabled={actionLoadingOrderId === (order.id || order.orderId)}
+                          className="p-1.5 rounded transition-colors text-emerald-600 hover:bg-emerald-50 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed flex items-center gap-1 border border-emerald-200 bg-emerald-50/50 hover:border-emerald-300"
+                          title="Mark Delivered"
+                        >
+                          {actionLoadingOrderId === (order.id || order.orderId) ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <><CheckCircle2 className="w-3.5 h-3.5" /><span className="text-[10px] font-semibold">Deliver</span></>
+                          )}
+                        </button>
+                      )}
+
                       {onCancelOrder ? (
                         <button
                           onClick={() => canShowCancelAction(order) && onCancelOrder(order)}
@@ -417,132 +445,19 @@ export default function OrdersTable({
                             actionLoadingOrderId === (order.id || order.orderId) ||
                             !canShowCancelAction(order)
                           }
-                          className={`inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded text-xs font-medium transition-colors ${canShowCancelAction(order)
-                              ? "bg-red-600 text-white hover:bg-red-700"
-                              : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                            } disabled:opacity-60 disabled:cursor-not-allowed`}
+                          className="p-1.5 rounded transition-colors text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:hover:bg-transparent disabled:cursor-not-allowed"
                           title="Cancel Order"
                         >
                           {actionLoadingOrderId === (order.id || order.orderId) ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <Loader2 className="w-4 h-4 animate-spin" />
                           ) : (
-                            <X className="w-3.5 h-3.5" />
+                            <X className="w-4 h-4" />
                           )}
-                          <span>Cancel</span>
                         </button>
                       ) : null}
-                      {onResendNotification ? (
-                        <button
-                          onClick={() =>
-                            canResendNotification(order) && onResendNotification(order)
-                          }
-                          disabled={
-                            actionLoadingOrderId === (order.id || order.orderId) ||
-                            !canResendNotification(order)
-                          }
-                          className={`inline-flex items-center justify-center gap-1 rounded px-3 py-1.5 text-xs font-medium transition-colors ${canResendNotification(order)
-                              ? "bg-blue-600 text-white hover:bg-blue-700"
-                              : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                            } disabled:cursor-not-allowed disabled:opacity-60`}
-                          title={
-                            canResendNotification(order)
-                              ? "Resend delivery notification to nearby partners"
-                              : "Available only after restaurant accepts the order and no delivery partner is assigned"
-                          }
-                        >
-                          {actionLoadingOrderId === (order.id || order.orderId) ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Volume2 className="h-3.5 w-3.5" />
-                          )}
-                          <span>Resend</span>
-                        </button>
-                      ) : null}
-                      {onDeassignAndResend ? (
-                        <button
-                          onClick={() =>
-                            canDeassignAndResend(order) && onDeassignAndResend(order)
-                          }
-                          disabled={
-                            actionLoadingOrderId === (order.id || order.orderId) ||
-                            !canDeassignAndResend(order)
-                          }
-                          className={`inline-flex items-center justify-center gap-1 rounded px-3 py-1.5 text-xs font-medium transition-colors ${canDeassignAndResend(order)
-                              ? "bg-red-600 text-white hover:bg-red-700"
-                              : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                            } disabled:cursor-not-allowed disabled:opacity-60`}
-                          title={
-                            canDeassignAndResend(order)
-                              ? "Remove the current delivery partner and resend this order"
-                              : "Available only for an accepted delivery before pickup"
-                          }
-                        >
-                          {actionLoadingOrderId === (order.id || order.orderId) ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <RefreshCw className="h-3.5 w-3.5" />
-                          )}
-                          <span>Deassign &amp; Resend</span>
-                        </button>
-                      ) : null}
-                    </div>
-                  </td>
-                )}
-                {visibleColumns.actions && (
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      {onAcceptOrder && (
-                        <button
-                          onClick={() => onAcceptOrder(order)}
-                          disabled={
-                            actionLoadingOrderId === (order.id || order.orderId) ||
-                            String(order.orderStatus || "").trim().toLowerCase() !== "pending"
-                          }
-                          className={`px-2.5 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                            String(order.orderStatus || "").trim().toLowerCase() === "pending"
-                              ? "text-white bg-emerald-600 hover:bg-emerald-700"
-                              : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                          } disabled:opacity-60 disabled:cursor-not-allowed`}
-                          title={
-                            String(order.orderStatus || "").trim().toLowerCase() === "pending"
-                              ? "Accept Order"
-                              : "Available only for pending orders"
-                          }
-                        >
-                          {actionLoadingOrderId === (order.id || order.orderId) ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Check className="w-3.5 h-3.5" />
-                          )}
-                          <span>Accept</span>
-                        </button>
-                      )}
-                      {onRejectOrder && (
-                        <button
-                          onClick={() => onRejectOrder(order)}
-                          disabled={
-                            actionLoadingOrderId === (order.id || order.orderId) ||
-                            String(order.orderStatus || "").trim().toLowerCase() !== "pending"
-                          }
-                          className={`px-2.5 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-1 ${
-                            String(order.orderStatus || "").trim().toLowerCase() === "pending"
-                              ? "text-white bg-rose-600 hover:bg-rose-700"
-                              : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                          } disabled:opacity-60 disabled:cursor-not-allowed`}
-                          title={
-                            String(order.orderStatus || "").trim().toLowerCase() === "pending"
-                              ? "Reject Order"
-                              : "Available only for pending orders"
-                          }
-                        >
-                          {actionLoadingOrderId === (order.id || order.orderId) ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <X className="w-3.5 h-3.5" />
-                          )}
-                          <span>Reject</span>
-                        </button>
-                      )}
+                      
+                      <div className="w-px h-4 bg-slate-200 mx-0.5"></div>
+                      
                       <button
                         onClick={() => onViewOrder(order)}
                         className="p-1.5 rounded text-orange-600 hover:bg-orange-50 transition-colors"

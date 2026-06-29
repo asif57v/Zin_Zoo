@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
-import api, { adminAPI } from "@food/api"
-import { API_ENDPOINTS } from "@food/api/config"
+import { adminAPI } from "@food/api"
 import { Heart, Users, Shield, Clock, Star, Award, Plus, X, GripVertical } from "lucide-react"
 import { Button } from "@food/components/ui/button"
 import { Input } from "@food/components/ui/input"
@@ -62,8 +61,8 @@ export default function AboutUs() {
   const fetchAboutData = async () => {
     try {
       setLoading(true)
-      const response = await api.get(API_ENDPOINTS.ADMIN.ABOUT, { contextModule: "admin" })
-      if (response.data.success) {
+      const response = await adminAPI.getPageContent('about')
+      if (response?.data?.success) {
         const data = response.data.data
         if (data && typeof data === "object") {
           setAboutData((prev) => ({
@@ -84,7 +83,7 @@ export default function AboutUs() {
   const handleSave = async () => {
     try {
       setSaving(true)
-      const response = await api.put(API_ENDPOINTS.ADMIN.ABOUT, aboutData, { contextModule: "admin" })
+      const response = await adminAPI.updatePageContent('about', aboutData)
       if (response.data.success) {
         toast.success('About page updated successfully')
         const data = response.data.data
@@ -124,17 +123,16 @@ export default function AboutUs() {
   const removeFeature = async (index) => {
     try {
       // Update state immediately for better UX
+      const updatedFeatures = aboutData.features.filter((_, i) => i !== index)
       const updatedData = {
         ...aboutData,
-        features: aboutData.features.filter((_, i) => i !== index)
+        features: updatedFeatures
       }
-
-      setAboutData(updatedData)
 
       // Save to backend immediately
       setSaving(true)
-      const response = await api.put(API_ENDPOINTS.ADMIN.ABOUT, updatedData, { contextModule: "admin" })
-      if (response.data.success) {
+      const response = await adminAPI.updatePageContent('about', updatedData)
+      if (response?.data?.success) {
         toast.success('Feature deleted successfully')
         const data = response.data.data
         if (data && typeof data === "object") {

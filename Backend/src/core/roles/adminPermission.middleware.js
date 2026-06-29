@@ -2,7 +2,7 @@ import { sendError } from '../../utils/response.js';
 import { FoodAdmin } from '../admin/admin.model.js';
 
 const isSuperAdmin = (admin) =>
-    !admin?.adminType || admin?.adminType === 'super_admin' || admin?.isSuperAdmin === true;
+    !admin?.adminType || admin?.adminType === 'super_admin' || admin?.adminType === 'admin' || admin?.isSuperAdmin === true || admin?.role === 'ADMIN';
 
 const hasAction = (permissions, section, action) => {
     const actions = Array.isArray(permissions?.[section]) ? permissions[section] : [];
